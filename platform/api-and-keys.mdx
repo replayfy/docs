@@ -1,0 +1,167 @@
+---
+title: "API & keys"
+description: "The three Replayfy key types — publishable, server, and webhook — and how to create, rotate, revoke, and authenticate with them."
+---
+
+Every request into Replayfy is authenticated with a workspace key. There are three kinds, each with a different job and a different level of secrecy: a **publishable** key you ship inside your app, a **server** key you keep on your backend, and a **webhook signing secret** you use to verify events we send you. You manage all of them from **Settings → Install** in the dashboard at [app.replayfy.app](https://app.replayfy.app).
+
+<Info>
+Keys are scoped to a single workspace. A key created in one workspace never sees another workspace's data — the key is how the ingest pipeline knows which workspace an event belongs to.
+</Info>
+
+## The three key types
+
+| Type | Prefix | Secret? | Where it lives | What it's for |
+| --- | --- | --- | --- | --- |
+| **Publishable** | `rpl_pk_` | No — safe to ship | In your web/mobile app | The SDKs use it to record sessions and fetch config |
+| **Server** | `rpl_sk_` | Yes — shown once | Your backend / CI only | Server-to-server ingest, enrichment, symbol uploads |
+| **Webhook** | `whsec_` | Yes — shown once | Your webhook receiver | Verifying that inbound webhooks really came from us |
+
+### Publishable keys (`rpl_pk_`)
+
+The publishable key is designed to be **public**. It goes straight into your website snippet or your mobile app bundle, where anyone can read it — that's expected. It can only do two things: send session events into the ingest pipeline and fetch the workspace's recording config. It can't read data back out, list users, or touch settings, so exposing it is not a security problem.
+
+<Tip>
+Because the publishable key is meant to be visible, the dashboard keeps it viewable — you can copy it from **Settings → Install** at any time. To limit where it's accepted, use the **Allowed hosts** list (see [Locking a key to your domains](#locking-a-key-to-your-domains)).
+</Tip>
+
+### Server keys (`rpl_sk_`)
+
+The server key is a **secret**. Keep it on your backend, in an environment variable — never in client code, a mobile bundle, or a public repo. It authorizes server-to-server work: sending events from your own services, enriching sessions from a backend job, and uploading symbol/mapping files from your CI so crash and ANR stacks deobfuscate on the dashboard.
+
+<Warning>
+A server key is shown **once**, at the moment you create or rotate it. Replayfy stores only a hash and can never show it to you again. Copy it immediately and store it in a secrets manager. If you lose it, rotate the key to mint a new secret.
+</Warning>
+
+### Webhook signing secrets (`whsec_`)
+
+The webhook secret isn't used to call Replayfy — it's used to **verify** the webhooks Replayfy sends to your endpoint. We sign each outbound request with this secret so your server can confirm the payload is genuine and wasn't tampered with. Store it alongside your server key and load it where you handle the incoming request.
+
+## Managing keys in the dashboard
+
+All key management lives in **Settings → Install**. Generating, rotating, and revoking keys is limited to workspace **admins and owners**; other members can see the key list (only the masked prefix, never the secret).
+
+<Steps>
+  <Step title="Open Settings → Install">
+    Go to [app.replayfy.app](https://app.replayfy.app), open **Settings**, and select the **Install** tab. You'll see your existing keys with their scope, when each was created, when it was last used, and when it was last rotated.
+  </Step>
+  <Step title="Generate a key">
+    Click **Generate key**. Give it a name (e.g. `Production iOS`), pick a scope — **Public**, **Server**, or **Webhook** — and optionally tag it with environment labels (`prod`, `staging`, `dev`) so you can tell keys apart at a glance.
+  </Step>
+  <Step title="Copy the key once">
+    The next screen shows the full key exactly once, with a copy button. For server and webhook keys this is the only time it's ever visible — copy it before you close the dialog.
+  </Step>
+</Steps>
+
+### Rotate a key
+
+Open the **⋯** menu on a key and choose **Rotate**. Rotation swaps the secret **on the same key** — the name, environment labels, and grants stay the same, so you don't have to reconfigure anything downstream except the secret value itself.
+
+<Warning>
+Rotation has **no grace period**. The old secret stops working the instant the new one is minted. Roll the new value out to your app or backend first, then rotate — or expect a brief gap where the old key is rejected.
+</Warning>
+
+### Revoke a key
+
+Open the **⋯** menu and choose **Revoke key**. The key stops working **immediately and permanently** — any SDK or service still using it will start failing to send events. Revocation can't be undone, so revoke a key when it's leaked or retired, and swap in a replacement first if the traffic matters.
+
+<Note>
+Revoked keys drop out of the key list in the dashboard. There's no "un-revoke" — mint a fresh key instead.
+</Note>
+
+## Authenticating requests
+
+Every request into the ingest pipeline carries your key in the **`x-replay-api-key`** header. That's true whether it's a browser SDK fetching config, a mobile app uploading a session, or your backend sending events server-to-server — the header name is always the same; only the key inside it changes.
+
+### What the SDK sends
+
+You never write the ingest header yourself in a client SDK — you configure the SDK with your **`apiKey`** (a publishable key) and an **`apiHost`** (your ingest region), and the SDK attaches the header on every request.
+
+<CodeGroup>
+```ts SDK config
+import { Replay } from "@replayfy/browser";
+
+Replay.init({
+  apiKey: "rpl_pk_YOUR_KEY",           // publishable — safe to ship
+  apiHost: "https://us.replayfy.app",  // your ingest region
+});
+```
+</CodeGroup>
+
+<Note>
+Replace `us.replayfy.app` with the ingest host for your workspace's region. You'll find the exact snippet — key and host filled in — in **Settings → Install**.
+</Note>
+
+### A server-to-server request
+
+From your backend, set the header yourself using a **server** key. This minimal request asks the ingest pipeline for the workspace's current recording config — a handy way to confirm from your own infrastructure that a key is valid and to see the settings the SDK will run under:
+
+<CodeGroup>
+```bash curl
+curl https://us.replayfy.app/v1/sdk/config \
+  -H "x-replay-api-key: rpl_sk_YOUR_SERVER_KEY"
+```
+
+```ts Node
+const res = await fetch("https://us.replayfy.app/v1/sdk/config", {
+  headers: { "x-replay-api-key": process.env.REPLAY_SERVER_KEY! },
+});
+const config = await res.json();
+```
+</CodeGroup>
+
+A valid key returns the resolved config as JSON. An unknown or revoked key returns **401 Unauthorized**, and a request from a host that isn't on your allow-list returns **403 Forbidden**.
+
+<Warning>
+Keep server keys server-side. Anything you can reach with a `rpl_sk_` key, anyone who copies it can too — never put one in browser or mobile code.
+</Warning>
+
+## Locking a key to your domains
+
+Because a publishable key is visible in your page source, someone could lift it and try to send events from their own site. To prevent that, add an **Allowed hosts** list under **Settings → Install**. When the list is non-empty, the ingest pipeline only accepts requests whose origin matches one of your hosts:
+
+| Entry | Matches |
+| --- | --- |
+| `example.com` | Exactly that host |
+| `*.example.com` | Any subdomain of `example.com` |
+| *(empty list)* | Any origin — the install-first default |
+
+<Note>
+The allow-list applies to browser requests, which always send an `Origin` header. Native mobile SDKs and true server-to-server calls have no browser origin, so they aren't gated by it — protect those with the secrecy of the key itself.
+</Note>
+
+## Rate limiting
+
+The management and API surface is rate-limited per client so that a runaway script can't overwhelm the service. If you exceed the limit, requests return **429 Too Many Requests** — back off and retry. The high-volume ingest and SDK-config endpoints are governed by a queue and backpressure layer instead of a fixed request cap, so ordinary recording traffic from a busy site or a shared corporate network is never throttled.
+
+<Tip>
+If you're building an integration that makes bursty management calls, batch them where you can and honor the `429` by retrying with exponential backoff rather than hammering the endpoint.
+</Tip>
+
+## Remote config: the dashboard overrides your code
+
+When an SDK starts up, it fetches the workspace's config from the ingest host using its publishable key — this is the `GET /v1/sdk/config` call shown above. That response, driven by your **Settings** in the dashboard, decides what actually gets recorded: console and network capture, input masking and privacy rules, sampling rate, minimum session duration, and retention.
+
+The practical upshot: **the dashboard is the source of truth.** If your code sets a capture option one way but Settings says another, Settings wins on the next config refresh — you can tighten privacy, dial sampling down, or pause recording for a workspace without shipping an app update.
+
+<Check>
+Config is cached briefly for speed, so a settings change reaches running SDKs within their next refresh cycle — usually under a minute. Some safety controls, like a workspace that has hit its plan's session allowance, are always evaluated fresh so recording stops promptly.
+</Check>
+
+<Note>
+Password fields are **always** masked, on every platform, regardless of your settings — there is no way to turn that off.
+</Note>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Install the Web SDK" icon="code" href="/platforms/web">
+    Drop in the snippet and start recording sessions.
+  </Card>
+  <Card title="Privacy & masking" icon="shield-halved" href="/guides/privacy-and-masking">
+    Control what's captured and what's redacted from Settings.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/platform/integrations">
+    Receive and verify signed events with your `whsec_` secret.
+  </Card>
+</CardGroup>

@@ -1,0 +1,228 @@
+---
+title: "Product Analytics"
+description: "Turn identify() and track() into live breakdowns of who your users are, how they behave, and where they drop off — all linked back to the exact session recordings."
+---
+
+Replayfy's analytics suite is built on one idea: every number should be one click away from the sessions behind it. When you tell Replayfy who a user is with `identify()` and what they did with `track()`, that data powers **Segments**, **active-user and retention trends**, **Funnels**, and **Cohorts** — and every band, tile, and step deep-links straight into the matching recordings.
+
+This page is the map. It covers the events model that feeds everything, the two analytics views that live on your **Overview** home page (Segments and Activity), and how those connect to Funnels and Cohorts.
+
+<Note>
+You don't need any extra SDK to get started. The moment the Replayfy SDK is recording, platform / browser / country / device breakdowns and active-user trends populate on their own. `identify()` and `track()` make them far richer.
+</Note>
+
+## The events model
+
+Two SDK calls are the raw material for every analytic in Replayfy.
+
+| Call | What it does | Powers |
+| --- | --- | --- |
+| `identify(userId, traits)` | Attaches a stable user id and a set of traits (email, plan, name, and any custom keys) to the current session and everyone it links to. | Users list, Segments, Cohorts, per-user journeys |
+| `track(name, properties)` | Records a named custom event with optional properties at the moment it happens. | Funnels, event breakdowns, behavioral Cohorts |
+
+### identify() — who the user is
+
+Call `identify()` as soon as you know who someone is (typically right after login). Replayfy promotes `email`, `name`, and `plan` to first-class fields and keeps every other trait as a searchable property on the user.
+
+<CodeGroup>
+```js Web
+// user.id is your own stable identifier for this person
+replay('identify', user.id, {
+  email: user.email,
+  name: user.name,
+  plan: user.plan,            // "free" | "pro" | "team" | "enterprise"
+  signup_date: user.createdAt,
+});
+```
+
+```swift iOS
+Replay.identify(
+  id: user.id,
+  traits: ["email": user.email, "plan": user.plan]
+)
+```
+
+```kotlin Android
+Replay.identify(
+  user.id,
+  mapOf("email" to user.email, "plan" to user.plan)
+)
+```
+
+```dart Flutter
+Replay.identify(user.id, traits: {
+  'email': user.email,
+  'plan': user.plan,
+});
+```
+</CodeGroup>
+
+<Tip>
+Sessions that happen **before** `identify()` runs aren't lost. When you later identify a person, Replayfy links their earlier anonymous sessions to the same profile, so you see their full journey — not just the sessions after they logged in.
+</Tip>
+
+### track() — what the user did
+
+Use `track()` for the moments that matter to your product: a signup, a checkout, a plan upgrade, a feature used for the first time. Each event has a **name** and an optional bag of **properties**.
+
+<CodeGroup>
+```js Web
+replay('track', 'checkout_completed', {
+  plan: 'pro',
+  amount: 49,
+  currency: 'USD',
+  items: 3,
+});
+```
+
+```swift iOS
+Replay.track("checkout_completed", [
+  "plan": "pro", "amount": 49
+])
+```
+
+```kotlin Android
+Replay.track("checkout_completed", mapOf(
+  "plan" to "pro", "amount" to 49
+))
+```
+</CodeGroup>
+
+Tracked event names are attached to the session they fire in, so you can later filter recordings by "sessions that fired `checkout_completed`" and build Funnels and Cohorts from those events. For the full guide to instrumenting events, see [Track custom events](/guides/track-events).
+
+<Info>
+The SDK is configured with your **publishable** key (`apiKey: "rpl_pk_YOUR_KEY"`) and your ingest host (`apiHost: "https://us.replayfy.app"`). The publishable key is safe to ship in client apps. Grab yours from **Settings → Install** in the dashboard. Server-side keys (`rpl_sk_…`) are only for backend annotation and never belong in client code.
+</Info>
+
+## Segments
+
+**Segments** live on your Overview page and answer "where do my sessions come from?" as three distribution bands over the selected time window:
+
+- **Platform** — web vs. iOS vs. Android vs. the rest
+- **Browser** — Chrome, Safari, Firefox, and so on
+- **Country** — resolved from each session, shown with its flag
+
+Each band shows every value's **share of sessions** and the absolute **session count** behind it. Hover a slice to isolate it; the legend below lists each value with its percentage and count.
+
+### Jump from a band to the recordings
+
+Segments aren't a dead-end chart — they're a way into the sessions.
+
+<Steps>
+<Step title="Open a full breakdown">
+Click a band (Platform, Browser, or Country) to open its breakdown drawer — a complete table of every value with its share and session count, not just the top slices shown inline.
+</Step>
+<Step title="Click a single value">
+Click any legend row — say the **web** platform row, or **Nigeria** in the Country band — and Replayfy takes you straight to the recordings list, pre-filtered to exactly those sessions (`platform:web`, `country:NG`, and so on).
+</Step>
+<Step title="Watch and refine">
+From there you're in the standard recordings view: sort, add more filters, and open any session to watch it. See [Session Replay](/products/session-replay) for the player.
+</Step>
+</Steps>
+
+<Note>
+A brand-new workspace with no sessions yet shows "No platform data reported yet" rather than a fabricated chart. Bands appear as soon as real sessions arrive.
+</Note>
+
+## Active users & retention
+
+The **Activity** section on your Overview turns engagement into a set of small-multiple tiles plus one focused trend chart. Every value is computed from your real session data — nothing here is a placeholder.
+
+### The tiles
+
+| Tile | Meaning |
+| --- | --- |
+| **DAU** | Daily active users |
+| **WAU** | Weekly active users |
+| **MAU** | Monthly active users |
+| **New** | First-time users in the window |
+| **Returning** | Users who came back |
+| **Retention** | Share of users who returned |
+
+Beneath the tiles, four derived stats summarize health at a glance:
+
+- **Stickiness** — DAU ÷ MAU
+- **Sessions per user** — over the window
+- **Avg. session** — mean session length
+- **New : returning** — the split of active users
+
+Any stat without a real measured source reads `—` rather than inventing a figure.
+
+### The trend chart
+
+Click a tile to drive the chart below it, then use the **Filter** button to shape a single analytics query. Every control queries live data:
+
+| Control | Options |
+| --- | --- |
+| **Metric** | Active users, Sessions, New users, Returning users, Avg session |
+| **Breakdown** | Platform, Browser, OS, Country, Device, Device model, App version, Plan, Entry page |
+| **Time** | Last hour, Last 24 hours, Last 7 days, Last 30 days, Last 90 days |
+| **Granularity** | 5-minute, Hourly, Day, Week, Month (whichever fits the range) |
+| **Compare** | Off, or vs. the previous period |
+| **Segment** | All users, Anonymous, Logged in, Paying, Enterprise, Power users (5+ sessions) |
+| **Filter rules** | Any number of `dimension:value` rules to narrow the query |
+
+<Tip>
+Turn on **Compare → Previous period** to overlay the prior window as a faint second line — the fastest way to see whether this week's active users are actually up or down versus last week.
+</Tip>
+
+The chart leads with the total and layers each breakdown value as a legend-toggled overlay line, so a "WAU by Plan" or "New users by Country" view is two clicks away.
+
+## Where the suite connects
+
+Segments and Activity are the top of the funnel — literally. The same events feed the two deeper tools:
+
+<CardGroup cols={2}>
+<Card title="Funnels" icon="filter" href="/products/funnels">
+Chain your `track()` events (and page visits) into an ordered funnel to see step-by-step conversion, drop-off, and the time between steps — then watch the sessions of the people who dropped.
+</Card>
+<Card title="Cohorts" icon="users" href="/products/cohorts">
+Group users by `identify()` traits (e.g. `plan = enterprise`) or by behavior (e.g. fired `checkout_completed` in the last 7 days) and reuse those cohorts as filters everywhere.
+</Card>
+</CardGroup>
+
+A useful mental model:
+
+- **Segments** answer *what kinds of sessions do I have right now?*
+- **Activity** answers *is engagement growing, and are people coming back?*
+- **Funnels** answer *where in a flow are people dropping off?*
+- **Cohorts** answer *which people should I focus on?*
+
+## Event naming best practices
+
+Good analytics start with disciplined event names. Because names and properties become filters, funnel steps, and cohort rules, a little consistency up front pays off everywhere.
+
+<AccordionGroup>
+<Accordion title="Use stable, snake_case names">
+Pick a name once and keep it. `checkout_completed` should mean the same thing forever. Renaming an event splits its history into two, and any funnel or cohort built on the old name silently stops matching. Lowercase `snake_case` (`plan_upgraded`, `invite_sent`) keeps names readable and avoids the casing drift you get from mixing `checkoutDone`, `Checkout Done`, and `checkout-complete`.
+</Accordion>
+<Accordion title="Name the action, in the past tense">
+Prefer `object_verb` in the past tense — `signup_completed`, `project_created`, `file_exported`. It reads naturally in a funnel ("signup_started → signup_completed") and keeps related events sorted together in autocomplete.
+</Accordion>
+<Accordion title="Put the variety in properties, not the name">
+Send one `plan_upgraded` event with a `{ plan: "pro" }` property, not separate `upgraded_to_pro` / `upgraded_to_team` events. Properties keep the event count small and let you break a single event down by any dimension later. Reuse the same property keys and value shapes across events (`plan` is always the same set of strings) so breakdowns line up.
+</Accordion>
+<Accordion title="Keep a short, shared list">
+A handful of well-named events beats hundreds of one-off ones. Agree on the names with your team, document them, and instrument the same event from web and mobile with the identical name so cross-platform reports are apples to apples.
+</Accordion>
+</AccordionGroup>
+
+<Warning>
+Never put secrets or sensitive personal data in event names or properties — they're stored and displayed as-is. Use the SDK's masking options for anything that shouldn't be captured.
+</Warning>
+
+Full instrumentation walkthrough: [Track custom events](/guides/track-events).
+
+## Related
+
+<CardGroup cols={3}>
+<Card title="Track custom events" icon="code" href="/guides/track-events">
+The complete guide to `track()` and `identify()`.
+</Card>
+<Card title="Funnels" icon="filter" href="/products/funnels">
+Turn events into step-by-step conversion analysis.
+</Card>
+<Card title="Cohorts" icon="users" href="/products/cohorts">
+Group users by traits and behavior.
+</Card>
+</CardGroup>

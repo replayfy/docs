@@ -1,0 +1,311 @@
+---
+title: "Session Replay"
+description: "Watch pixel-accurate replays of real web and mobile sessions, with the console, network, and performance data behind every moment."
+---
+
+Session Replay records what your users actually did — every click, tap, screen
+change, and page view — and pairs it with the technical context behind it: the
+console, network requests, performance vitals, and any errors that fired. When a
+customer hits a bug or drops out of a flow, you open their recording and watch it
+happen, then step through the exact request that failed or the rage-click that
+gave up.
+
+Recordings capture automatically once the SDK is installed. There's nothing to
+tag per-page — you enrich them with [`identify()` and `track()`](/guides/track-events)
+so each replay carries the user and the product events that matter to you.
+
+<Info>
+Recordings live at **app.replayfy.app/recordings**. The list is on the left, the
+player fills the center, and the investigation panel (Events, Console, Network,
+Performance…) sits on the right.
+</Info>
+
+## What a recording captures
+
+Every recording is a faithful, reconstructed timeline of the session — not a
+screen-grab video, but a lightweight stream that replays the real DOM (web) or a
+per-session frames archive (mobile) at a fraction of the bandwidth.
+
+<Tabs>
+  <Tab title="Web">
+    | Captured | Detail |
+    | --- | --- |
+    | **Visual replay** | Pixel-accurate playback of the real page, reconstructed from the session timeline |
+    | **Interactions** | Clicks, keystrokes, scrolls, text input, page navigation |
+    | **Frustration signals** | Rage clicks and dead clicks, flagged on the timeline |
+    | **Console** | `console.log` / `warn` / `error` output, with stacks |
+    | **Network** | fetch + XHR — method, URL, status, timing, and optional headers/bodies |
+    | **Performance** | Core Web Vitals (LCP, CLS, INP), loading (FCP, TTFB), JS heap, long tasks |
+    | **Errors** | Unhandled exceptions and promise rejections |
+  </Tab>
+  <Tab title="Mobile (iOS · Android · React Native · Flutter)">
+    | Captured | Detail |
+    | --- | --- |
+    | **Visual replay** | Per-session frames archive played back inside a device shell |
+    | **Interactions** | Native taps (with ripples) and screen-to-screen navigation |
+    | **Logs** | Console / logcat output |
+    | **Network** | Native requests — method, URL, status, timing |
+    | **Device vitals** | CPU, memory, thermal state, and battery, sampled while foregrounded |
+    | **Diagnostics** | Crash and ANR reports with symbolicated stacks |
+  </Tab>
+</Tabs>
+
+## Turn on recording
+
+Recording starts the moment the SDK initializes. All you need is your
+**publishable** API key (`rpl_pk_…`, safe to ship in your app) and your ingest
+host.
+
+<Steps>
+  <Step title="Grab your keys">
+    In **Settings → API keys**, copy the publishable key for your project
+    (`rpl_pk_YOUR_KEY`) and note your ingest host, e.g. `https://us.replayfy.app`.
+  </Step>
+  <Step title="Initialize the SDK">
+    <CodeGroup>
+    ```ts npm
+    import { initReplay } from "@replayfyapp/browser";
+
+    const replay = initReplay({
+      apiKey: "rpl_pk_YOUR_KEY",
+      apiHost: "https://us.replayfy.app",
+    });
+    ```
+
+    ```html CDN
+    <script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+    <script>
+      Replayfy.init({
+        apiKey: "rpl_pk_YOUR_KEY",
+        apiHost: "https://us.replayfy.app",
+      });
+    </script>
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Trigger a session">
+    Load a page (or open your app), click around for a few seconds, then check
+    **Recordings** in the dashboard. New sessions appear at the top of the list.
+  </Step>
+</Steps>
+
+<Note>
+`init()` is idempotent — a second call returns the live session instead of
+starting a second recording. See [Install on web](/platforms/web) and the
+per-platform guides for mobile.
+</Note>
+
+## Browse the Recordings list
+
+The left rail lists sessions newest-first, each row showing the identified user
+(name + email), platform, OS, country, duration, and error / rage counts. Type
+in the search bar to build **filter chips** — each chip narrows the list
+server-side, and multiple chips are ANDed together.
+
+| Filter | What it matches | Example |
+| --- | --- | --- |
+| `has:` | Sessions containing a signal | `has:error`, `has:rage`, `has:dead click`, `has:slow lcp`, `has:long tasks` |
+| `user:` | An identified user | `user:ada@example.com` |
+| `page:` | A visited path | `page:/checkout` |
+| `browser:` | Browser name | `browser:Chrome` |
+| `device:` | Device type | `device:Desktop`, `device:Mobile` |
+| `model:` | Hardware model | `model:iPhone 15` |
+| `platform:` | `web` / `ios` / `android` | `platform:web` |
+| `country:` | Geo country | `country:United States` |
+| `duration:` | Minimum session length | `duration:>2m` |
+
+<Tip>
+Value suggestions for `user`, `page`, `browser`, `device`, `model`, and
+`country` come from your real data as you type — so you're never offered a
+browser or a customer this workspace has never seen.
+</Tip>
+
+Recordings are also reachable **scoped** to a context you clicked in from
+elsewhere in the product. A dismissible banner names the scope, and **Clear**
+returns you to all recordings:
+
+- **Issue** — every session affected by a specific error (from the issue's investigation).
+- **Incident** — the sessions behind an Overview signal.
+- **Funnel step** — the sessions that reached a given step of a [funnel](/products/funnels).
+- **Playlist** — a curated set of recordings you (or a filter) added.
+
+## Open a replay
+
+Click any row to open its replay in the center player. The **scrubber** underneath
+the screen is a real timeline: each mark is an actual event from the session, so
+you can see where the errors, navigations, and rage clicks cluster before you
+even press play. Hovering a mark highlights the matching row in the Events panel,
+and clicking anywhere on the bar seeks there.
+
+The player is built for fast review with keyboard transport:
+
+| Key | Action |
+| --- | --- |
+| `Space` / `K` | Play / pause |
+| `←` / `→` | Step back / forward (hold `Shift` for 5s jumps) |
+| `J` / `L` | Slow down / speed up (0.5× · 1× · 2×) |
+| `[` / `]` | Previous / next recording |
+| `F` | Focus (theatre) mode — hide the rails; `Esc` exits |
+
+<Note>
+Web replays reconstruct the live DOM, so text stays crisp at any zoom and the
+cursor is rendered as a playback overlay (it never modifies the recording).
+</Note>
+
+## Inspect the session
+
+The right-hand panel is the investigation surface. Its tabs adapt to the
+platform, and each one is synced to the playhead — click a row to jump the video
+to that exact moment.
+
+<AccordionGroup>
+  <Accordion title="Events" icon="list">
+    The full activity log — clicks, navigation, custom `track()` events, and
+    errors, in order. The row at the playhead is highlighted as playback advances;
+    click any event to seek to it and expand its details.
+  </Accordion>
+  <Accordion title="Console" icon="terminal">
+    Every `console.*` line, filterable by level (Errors · Warn · Info · Log ·
+    Debug). Expand a row to read its stack trace, structured arguments, and the
+    timestamp it fired at.
+  </Accordion>
+  <Accordion title="Network" icon="arrows-up-down">
+    A DevTools-style request table — Time · Method · URL · Status · Duration —
+    with quick filters for `errors`, `GET`, `POST`, `PUT`, `DELETE`. Open a
+    request to inspect **Headers · Payload · Response · Timing**; clicking a row
+    also parks the playhead on that request.
+  </Accordion>
+  <Accordion title="Performance" icon="gauge">
+    On web: **Core Web Vitals** (LCP, CLS, INP) each rated Good / Needs
+    improvement / Poor, a **Loading** section (FCP, TTFB), the **JS heap** series,
+    a **Long tasks** summary (total blocking time + count), and a network summary
+    with total requests and the slowest one. On mobile: **device vitals** (CPU,
+    memory, thermal), a resource timeline, and slow-frame breakdowns.
+  </Accordion>
+  <Accordion title="Screens (mobile)" icon="mobile-screen">
+    The screen-navigation flow of a mobile session — each screen with its entry
+    time and duration. Tap one to seek the replay to when the user landed there.
+  </Accordion>
+  <Accordion title="Crashes (mobile)" icon="bug">
+    Crash and ANR reports captured during the session, with app version/build and
+    symbolicated stack traces.
+  </Accordion>
+  <Accordion title="Custom properties" icon="tags">
+    The user traits and session properties you attached via `identify()` — plan,
+    role, account id, feature flags, or anything else you send.
+  </Accordion>
+</AccordionGroup>
+
+## Enrich recordings with identify() and track()
+
+Out of the box, recordings are captured anonymously. Two SDK calls turn a raw
+session into one you can find and reason about.
+
+**`identify()`** attaches a user to the session. The distinct id, email, name,
+and plan surface on the recording row and header, and any extra traits land in
+the **Custom properties** tab — so you can later filter with `user:` or search
+for everyone on a given plan.
+
+```ts
+replay.identify("user_123", {
+  email: "ada@example.com",
+  name: "Ada Lovelace",
+  plan: "pro",
+});
+```
+
+**`track()`** drops a named product event onto the session timeline, where it
+becomes a marker on the scrubber and a row in the Events panel. Use stable event
+names (no spaces) so the same events power your [funnels](/products/funnels) and
+segments.
+
+```ts
+replay.track("checkout_started");
+replay.track("plan_upgraded", { from: "free", to: "pro" });
+```
+
+<Tip>
+Caught an error you want to see in context? `replay.captureException(err)` pins
+it to the session timeline and promotes it to a first-class issue with its name,
+message, and parsed stack.
+</Tip>
+
+## Share a recording
+
+Every recording can become a public link — handy for looping in a teammate,
+attaching to a bug report, or sending to someone without a Replayfy account.
+
+<Steps>
+  <Step title="Open the share dialog">
+    Click **Share** in the player toolbar (or right-click a row in the list →
+    **Share recording**).
+  </Step>
+  <Step title="Choose what to include">
+    Toggle exactly which panels travel with the link — Timeline events, Console
+    logs, Network requests, Performance, and (on mobile) Screens and Crashes.
+    Everything is on by default except **Comments**, which stays internal to your
+    team.
+  </Step>
+  <Step title="Set an expiry and generate">
+    Pick **24 hours**, **7 days**, or **30 days**, then **Generate link**. The URL
+    is copied to your clipboard automatically.
+  </Step>
+</Steps>
+
+<Warning>
+Anyone with a share link can view that recording without signing in. Links
+respect the expiry you set and can be regenerated at any time to invalidate an
+old one. Only the panels you enabled are exposed — the rest stay private.
+</Warning>
+
+## Leave comments
+
+Pause on the exact frame that matters and drop a note in the **Comments** tab.
+Each comment is pinned to the current timestamp, so a teammate opening the
+recording later can click **Open at** and jump straight to the moment you flagged
+— no "go to about 0:42" needed. The player badge keeps a running comment count.
+
+## Mobile replay
+
+Mobile recordings (iOS, Android, React Native, and Flutter) are reconstructed
+from a per-session **frames archive** — a compact bundle of screen frames the SDK
+captures as the app runs — played back inside a realistic device shell. On top of
+the frames, native **taps** render as ripples, **screen navigation** appears in
+the Screens tab, and crashes and ANRs land in Crashes. Playback, the timeline,
+`identify()`, `track()`, sharing, and comments all work exactly as they do on web.
+
+<Note>
+Mobile capture and playback follow a shared, reference frames-archive approach
+across all four mobile SDKs, so a recording behaves the same whichever platform
+produced it.
+</Note>
+
+## Privacy recap
+
+Replay is built to record real sessions without leaking sensitive data. By
+default the web SDK **masks every input value**, and you can add
+`maskTextSelector` to mask specific text, `blockSelector` to fully block
+elements, and `redactUrls` to strip patterns out of captured URLs. Network
+header capture is **off by default**, and a built-in deny-list masks sensitive
+header values when you do enable it.
+
+<Warning>
+Masking happens **in the SDK, before anything leaves the device** — masked
+content is never transmitted or stored. Review your masking rules before rolling
+out to production.
+</Warning>
+
+See [Privacy & masking](/guides/privacy-and-masking) for the full list of
+controls and recommended defaults.
+
+<CardGroup cols={3}>
+  <Card title="Track events" icon="chart-line" href="/guides/track-events">
+    Send the custom events that enrich recordings and power funnels.
+  </Card>
+  <Card title="Privacy & masking" icon="shield-halved" href="/guides/privacy-and-masking">
+    Control exactly what gets recorded and what stays masked.
+  </Card>
+  <Card title="Install the SDK" icon="code" href="/platforms/web">
+    Get recording live on web and mobile in a few minutes.
+  </Card>
+</CardGroup>

@@ -25,7 +25,9 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
         </CodeGroup>
       </Step>
       <Step title="Initialize">
-        ```ts
+        Use the tab that matches how you installed.
+        <CodeGroup>
+        ```ts npm
         import { initReplay } from "@replayfyapp/browser";
 
         initReplay({
@@ -33,7 +35,15 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
           apiHost: "https://us.replayfy.app",
         });
         ```
-        Using the script tag instead? Call `Replayfy.init({ apiKey, apiHost })`.
+        ```html Script tag
+        <script>
+          Replayfy.init({
+            apiKey: "rpl_pk_YOUR_KEY",
+            apiHost: "https://us.replayfy.app",
+          });
+        </script>
+        ```
+        </CodeGroup>
       </Step>
       <Step title="Verify">
         <Check>Reload your site, click around, then open **Recordings** in the dashboard — your session appears within seconds.</Check>

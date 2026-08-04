@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Replayfy",
-  "description": "Session replay, product analytics & error monitoring. Set up in under 2 minutes.",
+  "description": "Session replay, product analytics & error monitoring. The complete how-to for your whole platform.",
   "colors": { "primary": "#6366F1", "light": "#818CF8", "dark": "#4F46E5" },
   "favicon": "/favicon.svg",
   "logo": { "light": "/logo/light.svg", "dark": "/logo/dark.svg" },
@@ -11,15 +11,21 @@
       {
         "tab": "Documentation",
         "groups": [
-          { "group": "Get started", "pages": ["quickstart", "introduction"] },
+          { "group": "Get started", "pages": ["introduction", "quickstart"] },
           { "group": "SDKs", "pages": ["platforms/web", "platforms/ios", "platforms/android", "platforms/react-native", "platforms/flutter"] },
-          { "group": "Guides", "pages": ["guides/identify-users", "guides/track-events", "guides/privacy-and-masking"] }
+          { "group": "Products", "pages": ["products/session-replay", "products/product-analytics", "products/funnels", "products/cohorts", "products/crashlytics", "products/alerts"] },
+          { "group": "Platform", "pages": ["platform/replayfy-ai", "platform/integrations", "platform/api-and-keys", "platform/workspaces-and-billing"] },
+          { "group": "Guides", "pages": ["guides/identify-users", "guides/track-events", "guides/privacy-and-masking"] },
+          { "group": "Help", "pages": ["support"] }
         ]
       }
     ]
   },
   "navbar": {
-    "links": [{ "label": "Dashboard", "href": "https://app.replayfy.app" }],
+    "links": [
+      { "label": "Support", "href": "/support" },
+      { "label": "Dashboard", "href": "https://app.replayfy.app" }
+    ],
     "primary": { "type": "button", "label": "Sign up free", "href": "https://app.replayfy.app/signup" }
   },
   "footer": {

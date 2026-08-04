@@ -1,0 +1,190 @@
+---
+title: "Alerts"
+description: "Get an email when something you care about happens — a watched issue comes back, a dashboard signal recurs, a metric crosses a threshold, or a funnel's conversion drops."
+---
+
+Alerts are how Replayfy tells you when something you care about happens again — without you having to keep the dashboard open. Replayfy already detects issues, signals, and conversion trends across your web and mobile sessions; an alert is a standing subscription that says *where to notify you* when one of them fires.
+
+Alerts are **email-first**. Every alert can email a list of recipients, and funnel-conversion alerts are delivered by email only. Recurrence and threshold alerts also drop into the in-app notification bell and can fan out to a connected channel like PagerDuty, Slack, or a webhook.
+
+<Note>
+You manage alerts on the **Alerts** page at [app.replayfy.app/alerts](https://app.replayfy.app/alerts). Alerts are *born* from the feature you're watching — a funnel, an issue, or a signal — and then live on the Alerts page for you to retune, re-route, pause, or remove.
+</Note>
+
+## Alert types
+
+Replayfy has four kinds of alert. Which one you get depends on what you were looking at when you created it.
+
+| Type | Watches | Fires when | Delivery |
+| --- | --- | --- | --- |
+| **Issue recurrence** | A specific issue you asked Replayfy to watch | The issue regresses — it was resolved and has come back | In-app bell · email · connected channels |
+| **Signal recurrence** | A dashboard signal (incident) | The signal is active again with fresh activity after you set the alert | In-app bell · email · connected channels |
+| **Metric threshold** | A daily signal metric (crashes, slow APIs, frustration, health score…) | Today's value crosses your threshold (above or below) | In-app bell · email · connected channels |
+| **Funnel conversion** | A saved funnel's overall conversion rate | Conversion drops, or falls below / rises above a percentage over a window of days | **Email only** |
+
+<Info>
+Metric-threshold alerts watch the *same* daily counters the dashboard shows — crashes, backend failures, slow API calls, frustrated sessions, form abandonment, navigation loops, conversion failures, conversion successes, and health score. An alert never watches an invented metric.
+</Info>
+
+## How alerts get created
+
+The Alerts page is a management surface, not a builder — you create each alert from the thing it watches.
+
+<AccordionGroup>
+  <Accordion title="Funnel-conversion alert — from the funnel builder" icon="filter">
+    Open a saved funnel and choose **Alert on this funnel** from the builder header. Pick a condition, add recipients, and Replayfy checks the funnel's conversion once a day. See the [Funnels](/products/funnels) guide for building the funnel first.
+  </Accordion>
+  <Accordion title="Issue-recurrence alert — from an issue" icon="bug">
+    Open an issue and ask Replayfy to watch it, or tell **Replayfy AI** "alert me if this issue comes back." The alert fires the moment the issue regresses (resolved → back again).
+  </Accordion>
+  <Accordion title="Signal-recurrence alert — from a signal" icon="bell">
+    On a dashboard signal, choose **Create alert**. It's baselined to the signal's current activity, so it only notifies you about *future* recurrence — never the activity you're looking at right now.
+  </Accordion>
+  <Accordion title="Metric-threshold alert — from Replayfy AI" icon="sparkles">
+    Ask **Replayfy AI** something like "email me if crashes go above 50 today." The AI can create threshold and recurrence alerts on your behalf; editing, pausing, and deleting them stay with you on the Alerts page.
+  </Accordion>
+</AccordionGroup>
+
+### Create a funnel-conversion alert
+
+<Steps>
+  <Step title="Open a saved funnel">
+    Go to [Funnels](/products/funnels), open the funnel you want to watch, and click **Alert on this funnel** in the builder header. The funnel must be saved first.
+  </Step>
+  <Step title="Choose a condition">
+    Pick **Drops by** (a relative drop versus the previous window) or **Falls below** (a fixed conversion percentage), then set the threshold. The comparison window comes from the funnel's own window in days.
+  </Step>
+  <Step title="Add recipients">
+    Your account email is pre-filled. Type any additional addresses and press <kbd>Enter</kbd> or comma to add each one. Remove anyone you don't want.
+  </Step>
+  <Step title="Create the alert">
+    Click **Create alert**. Replayfy checks conversion once daily off the conversion history and emails everyone on the list when the condition is met.
+  </Step>
+</Steps>
+
+## The condition model
+
+Every alert that isn't a plain "watch this again" subscription is defined by a small, consistent condition: a **comparator**, a **threshold**, and — for funnel alerts — a **window in days**.
+
+| Field | Applies to | Values | What it means |
+| --- | --- | --- | --- |
+| `comparator` | Metric threshold | `ABOVE` · `BELOW` | Fire when today's metric value is above / below the threshold. |
+| `comparator` | Funnel conversion | `DROP_PCT` · `BELOW` · `ABOVE` | Fire on a relative drop vs the prior window, or when conversion falls below / rises above a fixed percentage. |
+| `threshold` | Metric threshold | Any number | The count or score to compare today's value against. |
+| `threshold` | Funnel conversion | `0`–`100` | A percentage — either the relative drop (for `DROP_PCT`) or the conversion rate (for `BELOW` / `ABOVE`). |
+| `windowDays` | Funnel conversion | `1`–`90` (default `7`) | The comparison window. For `DROP_PCT`, the current window is measured against the equal-length window before it. |
+
+Here's how the same funnel alert reads as a stored condition for each comparator:
+
+<CodeGroup>
+```json Drops by
+{
+  "comparator": "DROP_PCT",
+  "threshold": 20,
+  "windowDays": 7
+}
+// Conversion drops by more than 20% vs the previous 7 days
+```
+
+```json Falls below
+{
+  "comparator": "BELOW",
+  "threshold": 40,
+  "windowDays": 7
+}
+// Conversion falls below 40% over the last 7 days
+```
+
+```json Rises above
+{
+  "comparator": "ABOVE",
+  "threshold": 65,
+  "windowDays": 14
+}
+// Conversion rises above 65% over the last 14 days
+```
+</CodeGroup>
+
+<Tip>
+Funnel-conversion alerts need enough traffic to be trustworthy. A window with very few entrants won't fire, and a `DROP_PCT` alert also needs a healthy prior window to compare against — so a quiet day never triggers a false alarm.
+</Tip>
+
+## Email delivery and recipients
+
+Email is the primary channel for alerts, and the only channel for funnel-conversion alerts.
+
+- **Multiple recipients.** Funnel-conversion alerts carry a recipient list. Add as many teammates as you need (up to 20); duplicates and malformed addresses are dropped automatically.
+- **Sensible default.** Leave the recipient list empty and the alert emails **the person who created it**, using their Replayfy account email. The funnel builder pre-fills your own address so there's always at least one recipient.
+- **What lands in the inbox.** Each email names the alert, describes exactly what happened (for example, *"Checkout conversion is 31.4% — down 22% from 40.1% over the last 7 days"*), and — for funnel alerts — includes a **View funnel** button that deep-links straight back to the dashboard.
+
+<Warning>
+Email recipients are addresses you or your teammates enter explicitly. Replayfy never emails an address it inferred — an alert only reaches its recipient list or, as a fallback, the creator's account email.
+</Warning>
+
+## Delivery channels
+
+| Channel | Issue / signal / metric alerts | Funnel-conversion alerts |
+| --- | --- | --- |
+| **In-app bell** | Always on — owners and admins see it | — |
+| **Email** | Optional, to a recipient or the creator | Always on, to the full recipient list |
+| **PagerDuty / Slack / Webhook** | Optional, if connected | — |
+
+For recurrence and threshold alerts you can route to an external channel in addition to the bell and email. A provider only appears as a choice once you've connected it — an alert can't route somewhere that would silently never deliver.
+
+<Note>
+Connect PagerDuty, Slack, or a webhook per-workspace under **Settings → Integrations**. See [Integrations](/platform/integrations) to set one up, then pick it from the alert's channel picker.
+</Note>
+
+## Managing alerts on the Alerts page
+
+The Alerts page lists every alert in the workspace, newest first, with a stat row at the top (total alerts, how many are watching an issue, and how many are paused). Each row shows what the alert is **watching**, its **channel**, and when it **last fired**.
+
+<Steps>
+  <Step title="Open the Alerts page">
+    Go to [app.replayfy.app/alerts](https://app.replayfy.app/alerts).
+  </Step>
+  <Step title="Open a row's menu">
+    Click the **⋯** menu at the end of any alert row.
+  </Step>
+  <Step title="Manage or re-route it">
+    For a **funnel-conversion** alert, choose **Manage alert** to edit the comparator, threshold, window in days, and the email recipient list. For an **issue, signal, or metric** alert, choose **Change channel** to pick which connected channels it routes to (the in-app bell is always on, and the email leg is shown).
+  </Step>
+  <Step title="Remove it when you're done">
+    Choose **Unsubscribe from issue** (for an issue-recurrence alert — the issue itself stays, only the subscription is removed) or **Delete alert**. Both stop the notifications immediately and can't be undone.
+  </Step>
+</Steps>
+
+An alert that has been paused stops firing without being deleted and shows a **Paused** badge in its *Last fired* column — useful for muting a noisy alert during a known incident or a planned change.
+
+<Check>
+A row labels itself by exactly what it watches. If a watched issue is later deleted, the alert honestly reads **"Issue unavailable"** rather than inventing a title — so the list never lies about what it's tracking.
+</Check>
+
+## When alerts fire
+
+Different alerts are evaluated on different cadences, matched to how quickly their underlying data changes.
+
+| Alert | Cadence | Notes |
+| --- | --- | --- |
+| Issue recurrence | Every few minutes | Fires shortly after the issue regresses. |
+| Signal recurrence | Every few minutes | Fires on fresh activity after the alert was set. |
+| Metric threshold | Every few minutes | Checked against **today's** metric value. |
+| Funnel conversion | Once daily | Evaluated off the previous day's conversion history. |
+
+<Info>
+Every alert has a **cooldown**: once it fires, it won't notify you again for the same ongoing condition for about six hours. A still-breaching alert folds into a single ongoing notification instead of paging you every tick.
+</Info>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Funnels" icon="filter" href="/products/funnels">
+    Build a conversion funnel, then attach a funnel-conversion alert to it.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/platform/integrations">
+    Connect PagerDuty, Slack, or a webhook to route alerts beyond email.
+  </Card>
+  <Card title="Crashlytics" icon="bug" href="/products/crashlytics">
+    See how Replayfy detects the issues that recurrence alerts watch.
+  </Card>
+</CardGroup>

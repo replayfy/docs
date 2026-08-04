@@ -1,47 +1,61 @@
 ---
-title: "What is Replayfy?"
-description: "Session replay, product analytics, and error monitoring for web and mobile — one SDK per platform."
+title: "Welcome to Replayfy"
+description: "Session replay, product analytics, and error monitoring for web and mobile — the complete how-to for your whole platform."
 ---
 
 Replayfy records what your users actually do — pixel-accurate session replays, taps
 and clicks, screen navigation, network activity, console logs, crashes, and
-performance vitals — and streams it to your dashboard so you can watch real
-sessions, build funnels, and debug errors from the exact moment they happened.
+performance vitals — then turns it into **funnels, cohorts, crash reports, and AI
+answers** so you can see how your product is really used and fix what's broken.
 
-Drop in one SDK per platform and you're recording in under two minutes.
-
-## What you get
+Drop in one SDK per platform and you're recording in under two minutes. These docs
+are the complete how-to for the whole platform — from your first session to funnels,
+crash triage, alerts, and Replayfy AI.
 
 <CardGroup cols={2}>
-  <Card title="Session replay" icon="play">
-    Pixel-accurate playback of real sessions on web, iOS, Android, React Native,
-    and Flutter — with automatic tap, click, and screen-navigation capture.
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Install an SDK and watch your first real session in under two minutes.
   </Card>
-  <Card title="Product analytics" icon="chart-line">
-    Identify users and fire custom events that power funnels, retention, and
-    filterable session search.
-  </Card>
-  <Card title="Error monitoring" icon="bug">
-    Automatic crash and exception capture, plus a first-class API for reporting
-    handled errors — with the replay attached.
-  </Card>
-  <Card title="Privacy first" icon="shield-halved">
-    Mask or block any element, field, or region so sensitive data never leaves
-    the device. Inputs are redacted by default.
+  <Card title="What's in Replayfy" icon="compass" href="#the-platform">
+    Replay, analytics, crash monitoring, alerts, and Replayfy AI — one platform.
   </Card>
 </CardGroup>
 
-## How it works
+## The platform
 
-Each SDK captures on-device, batches efficiently, and streams to the Replayfy
-ingest endpoint. Recording, tap capture, screen detection, crash handling, and
-performance monitoring all start from a single `init` / `start` call — no manual
-wiring.
+Everything below shares the same recordings and events, so a session you watch is
+the same session that powers a funnel, a cohort, a crash report, and an AI answer.
 
-Dashboard configuration overrides the values you set in code, so you can tune
-capture (masking, sampling, what to record) without shipping a new app build.
+<CardGroup cols={2}>
+  <Card title="Session Replay" icon="play" href="/products/session-replay">
+    Watch pixel-accurate replays of real web and mobile sessions.
+  </Card>
+  <Card title="Product Analytics" icon="chart-line" href="/products/product-analytics">
+    Events, segments, and retention from your identified users.
+  </Card>
+  <Card title="Funnels" icon="filter" href="/products/funnels">
+    Measure conversion, timing, and drop-off across ordered steps.
+  </Card>
+  <Card title="Cohorts" icon="users" href="/products/cohorts">
+    Living groups of users, built from traits or behavior.
+  </Card>
+  <Card title="Crashlytics" icon="bug" href="/products/crashlytics">
+    Crashes, exceptions, and ANRs — with the replay attached.
+  </Card>
+  <Card title="Alerts" icon="bell" href="/products/alerts">
+    Get an email when conversion drops or an issue spikes.
+  </Card>
+  <Card title="Replayfy AI" icon="wand-magic-sparkles" href="/platform/replayfy-ai">
+    Ask questions in plain language — grounded in your real data.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/platform/integrations">
+    Connect your issue tracker, chat, and incident tools.
+  </Card>
+</CardGroup>
 
-## Pick your platform
+## Install an SDK
+
+One SDK per platform, `apiKey` + `apiHost`, and you're recording.
 
 <CardGroup cols={3}>
   <Card title="Web" icon="js" href="/platforms/web" />
@@ -49,5 +63,39 @@ capture (masking, sampling, what to record) without shipping a new app build.
   <Card title="Android" icon="android" href="/platforms/android" />
   <Card title="React Native" icon="react" href="/platforms/react-native" />
   <Card title="Flutter" icon="flutter" href="/platforms/flutter" />
-  <Card title="Quickstart" icon="bolt" href="/quickstart" />
+  <Card title="All SDKs" icon="layer-group" href="/platforms/web" />
+</CardGroup>
+
+## Make the data yours
+
+Recording is automatic. These three guides connect sessions to real people and
+events, and keep sensitive data off the wire.
+
+<CardGroup cols={3}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users" />
+  <Card title="Track events" icon="bolt" href="/guides/track-events" />
+  <Card title="Privacy & masking" icon="shield-halved" href="/guides/privacy-and-masking" />
+</CardGroup>
+
+## How it works
+
+Each SDK captures on-device, batches efficiently, and streams to your Replayfy
+ingest host. Recording, tap capture, screen detection, crash handling, and
+performance monitoring all begin from a single `init` / `start` call — no manual
+wiring. Settings you configure in the dashboard are fetched at startup and take
+precedence over the values passed in code, so you can tune masking, sampling, or
+pause recording without shipping a new build.
+
+## Get help
+
+<CardGroup cols={3}>
+  <Card title="Community & support" icon="life-ring" href="/support">
+    Reach the team, report a security issue, or join the community.
+  </Card>
+  <Card title="Open the dashboard" icon="gauge" href="https://app.replayfy.app">
+    Sign in to watch sessions and manage your workspace.
+  </Card>
+  <Card title="Contribute to docs" icon="pen-to-square" href="https://github.com/replayfy">
+    These docs are open — suggest an edit on GitHub.
+  </Card>
 </CardGroup>

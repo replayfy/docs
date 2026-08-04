@@ -1,0 +1,212 @@
+---
+title: "Workspaces & billing"
+description: "Organize projects into workspaces, invite your team with the right roles, and manage your plan, AI credits, and invoices."
+---
+
+A **workspace** is one isolated project in Replayfy. It has its own recordings, its own SDK keys, its own members, and its own plan and billing. Nothing crosses between workspaces: a member of one workspace can't see the sessions, settings, or invoices of another, and each workspace's data retention and AI allowance are counted separately.
+
+Most teams run one workspace per product (or one per environment — say a staging workspace and a production workspace). You switch between the workspaces you belong to from the switcher at the top of the sidebar in the dashboard at [app.replayfy.app](https://app.replayfy.app), and everything on this page lives under **Settings**.
+
+<Info>
+Every new workspace starts on the **Free** plan. You can't set a paid plan by creating a workspace — paid entitlements only ever arrive through a completed checkout.
+</Info>
+
+## Each workspace has its own keys
+
+When you create a workspace, Replayfy issues it a **publishable SDK key** (`rpl_pk_…`) that you drop into your app to start recording, and a **server key** (`rpl_sk_…`) for server-side calls. The publishable key is safe to ship in client code; the server key is not — keep it on your backend.
+
+Point your SDK at the workspace by its `apiKey` and your ingest `apiHost`:
+
+<CodeGroup>
+```ts Web SDK
+import Replayfy from "@replayfyapp/browser";
+
+Replayfy.init({
+  apiKey: "rpl_pk_YOUR_KEY",          // this workspace's publishable key
+  apiHost: "https://us.replayfy.app", // your ingest host
+});
+```
+
+```bash Server-side ingest
+curl https://us.replayfy.app/v1/... \
+  -H "x-replay-api-key: rpl_sk_YOUR_SERVER_KEY"
+```
+</CodeGroup>
+
+Because keys are per-workspace, sending events with a workspace's key files them into that workspace and counts against *its* session ceiling — never another's. Find and rotate keys under **Settings → Install**. See [the web install guide](/platforms/web) for the full setup.
+
+## Members and roles
+
+Invite as many teammates as you like — seats are **not** metered and never change your bill. Everyone you invite gets one of four roles, from most to least access:
+
+| Role | Can do |
+| --- | --- |
+| **Owner** | Everything an Admin can, plus delete the workspace and grant the Owner role. The Owner can't be removed or demoted by anyone else. |
+| **Admin** | Everything a Member can, plus change any setting, mint or revoke SDK keys, rename the workspace, invite and manage teammates, change the plan, and manage billing. |
+| **Member** | Watch recordings, comment, build playlists, manage cohorts / funnels / alerts, and ask Replayfy AI. |
+| **Viewer** | Watch recordings only. Viewers don't see Settings and can't ask the AI (AI spends real credits). |
+
+<Note>
+Only an **Owner** can grant the Owner role. An Admin can invite and promote people up to Admin, but can't create a second Owner — that keeps ownership deliberate.
+</Note>
+
+### Invite teammates
+
+<Steps>
+<Step title="Open the Team settings">
+Go to **Settings → Team**. Inviting requires **Admin** or **Owner**.
+</Step>
+<Step title="Add email addresses">
+Click **Invite member** and paste one or more emails, separated by commas or new lines.
+</Step>
+<Step title="Choose a role">
+Pick **Viewer**, **Member**, or **Admin** for the whole batch. Each invitee receives an email invitation carrying the workspace name.
+</Step>
+<Step title="Track pending invites">
+Invitations that haven't been accepted appear under **Pending invites**, where you can **Resend** or **Cancel** any of them (or **Resend all**).
+</Step>
+</Steps>
+
+<Tip>
+Send a batch at mixed roles by inviting each group separately — the role you pick applies to every email in that send.
+</Tip>
+
+### Change a role or remove someone
+
+In the members table (**Settings → Team**), use the role dropdown next to any teammate to switch them between **Admin**, **Member**, and **Viewer**, or choose **Remove member** to revoke their access immediately. The Owner's row is a read-only badge — it can't be changed or removed. Removing someone is instant and can't be undone, but you can always invite them back later.
+
+### Leave a workspace
+
+Anyone can remove themselves from a workspace under **Settings → Team → Leave workspace**. You'll lose access to that workspace and its recordings until you're invited back.
+
+The one exception is the **sole Owner** — leaving would strand the workspace with no owner, so it's blocked. To hand off first, promote another member to **Owner** (only an existing Owner can do this), then leave. Alternatively, an Owner can delete the workspace outright.
+
+<Warning>
+Deleting a workspace (**Settings → General → Danger zone**, Owner only) permanently removes every recording, comment, cohort, playlist, invite, and member. There is no undo.
+</Warning>
+
+## Plans
+
+Replayfy bills on a simple ladder: a free tier to evaluate on, four self-serve paid tiers, and a negotiated Enterprise tier. What you pay for is **billable sessions per month** — one allowance regardless of whether a session came from web, iOS, Android, React Native, or Flutter.
+
+| Plan | Price | Sessions / mo | Retention | AI credits / mo | Support |
+| --- | --- | --- | --- | --- | --- |
+| **Free** | $0 | 1,000 | 30 days | 100K | Community |
+| **Starter** | $69 | 10,000 | 90 days | 1M | Email |
+| **Growth** ⭐ | $249 | 50,000 | 180 days | 3.7M | Priority email |
+| **Scale** | $599 | 150,000 | 1 year | 9M | Priority + Slack |
+| **Business** | $1,399 | 500,000 | 2 years | 21M | Dedicated |
+| **Enterprise** | Custom | Custom | Custom | Custom | SLA + dedicated |
+
+<Info>
+Compare every plan side by side in the dashboard under **Settings → Billing → Change plan**. Growth is the recommended tier for teams that live in their session data.
+</Info>
+
+### What scales with your plan
+
+Moving up the ladder raises three things together, plus unlocks a few enterprise features:
+
+- **Session volume** — how many recordings you can capture each calendar month before the ceiling applies.
+- **Data retention** — how long recordings are kept before they're permanently deleted, from 30 days on Free up to 2 years on Business (custom on Enterprise). You can set a *shorter* retention window than your plan allows under **Settings → Retention**, but never a longer one — the plan is the ceiling. Sessions with at least one captured error can optionally be kept twice as long.
+- **AI allowance** — the monthly bundle of credits Replayfy AI draws on (see below).
+- **Seats** — always unlimited and never per-user billed, on every tier.
+
+Higher tiers also add **SSO** (Scale and up), **audit logs** (Business), and **SAML / SCIM, custom retention, a self-host option, and an SLA** (Enterprise).
+
+### The session counter and auto-upgrade
+
+Your session counter runs per **calendar month** and resets at the start of the next month (UTC) — this is true for every plan, including Free, which has no renewal date of its own.
+
+What happens when you reach the ceiling depends on your plan:
+
+- **Free** pauses recording until the counter resets (or until you upgrade, which restarts capture immediately). No data already recorded is lost.
+- **Paid tiers auto-upgrade to the next tier** when you cross the ceiling — there's no per-session overage to reason about, and no surprise metered charge. **Business** is the top self-serve tier, so as you approach its ceiling, Replayfy reaches out to move you to Enterprise.
+
+<Note>
+You can't switch *down* to a paid plan whose ceiling is below what you've already recorded this cycle — the move would just be undone by auto-upgrade. Wait for the counter to reset at the start of next month, or contact us. (Downgrading to Free is always allowed, since it's a cancellation.)
+</Note>
+
+## AI credits
+
+[Replayfy AI](/platform/replayfy-ai) — the assistant, investigations, storylines, and signals — is billed in **credits**, separately from your session plan. Every plan includes a **monthly credit allowance** (the table above), and when a bill of work needs more, you can buy **top-up packs**.
+
+The two behave differently, which is the important part:
+
+| | Included allowance | Purchased credits |
+| --- | --- | --- |
+| Where it comes from | Bundled free with your plan | Bought as a top-up pack |
+| Resets | Every month | Never — they carry over |
+| Spent | First | Only after the month's allowance runs out |
+
+So a top-up is never wasted: purchased credits sit behind your monthly bundle and are only touched once the included allowance is used up.
+
+### Buy a top-up
+
+<Steps>
+<Step title="Open Billing">
+Go to **Settings → Billing**. Buying credits requires **Admin** or **Owner**.
+</Step>
+<Step title="Choose a pack">
+Under **Replayfy AI**, click **Buy more credits** and pick a pack — **$10**, **$25**, **$50**, or **$100**. At 100,000 credits per US dollar, that's **1M**, **2.5M**, **5M**, or **10M** credits.
+</Step>
+<Step title="Pay in place">
+Enter your card (Link and wallet methods are supported too) and confirm. Credits land on your balance within a few seconds of a successful payment.
+</Step>
+</Steps>
+
+The **Billing** page shows where your credits went — a breakdown by product surface over the last 30 days — plus a receipt for every top-up. When your AI credits run out, AI features pause until the next monthly reset or your next top-up; recording and analytics are unaffected.
+
+## Manage billing
+
+Everything money-related lives under **Settings → Billing**, and all of it requires **Admin** or **Owner**. Members and Viewers see the page read-only. The billing page shows your current plan, this cycle's session and AI usage, your payment method, and your invoices.
+
+### Change or cancel your plan
+
+<Steps>
+<Step title="Open Change plan">
+From **Settings → Billing**, click **Change plan** to see the full comparison.
+</Step>
+<Step title="Pick a new plan">
+Plan changes are **instant and prorated**. Upgrading or moving between paid plans on a live subscription charges only the prorated difference right away — no redirect. A first paid subscription is completed with an in-page checkout.
+</Step>
+<Step title="Downgrading to Free is a cancellation">
+Choosing Free cancels your subscription. Your paid plan stays active until the end of the period you've already paid for, then the workspace drops to Free.
+</Step>
+</Steps>
+
+<Warning>
+Downgrading to a shorter retention window **permanently deletes** recordings older than the new window when it takes effect. Replayfy shows you exactly what will be lost before you confirm — there's no undo and no export afterward.
+</Warning>
+
+If you scheduled a cancellation but change your mind before the period ends, click **Keep my plan** on the Billing page to resume renewing.
+
+### Payment method, invoices, and receipts
+
+Your card, past invoices (each downloadable), and tax details are managed in the **billing portal** — open it with **Manage in portal** on the Billing page. Invoices also list directly on the Billing page once you're on a paid plan, with **Show older invoices** to page back through your history.
+
+### If recording stops
+
+Replayfy tells you plainly at the top of the Billing page when capture has paused, and gives you the one action that restarts it:
+
+| Situation | What it means | Fix |
+| --- | --- | --- |
+| **Free cap reached** | You've used every session on Free this month | Upgrade to restart capture now, or wait for the monthly reset |
+| **Payment failed / past due** | Stripe couldn't charge your card, so the workspace is held at Free's limits | Update the card in the portal — it retries the charge immediately |
+| **Overage invoice unpaid** | An outstanding invoice is blocking capture | Pay it in the portal; capture restarts as soon as it clears |
+
+<Check>
+A past-due payment doesn't stop recording right away — Stripe retries the card for a few days first. Updating the card during that window retries the charge immediately and keeps you running.
+</Check>
+
+### Enterprise billing
+
+Enterprise plans are billed on a contract, so volume, retention, and invoicing are handled by your account manager rather than self-serve. Your invoices still appear on the Billing page. To discuss Enterprise, contact **sales@replayfy.com**, or reach your account team at **accounts@replayfy.com**.
+
+<CardGroup cols={2}>
+<Card title="Replayfy AI" icon="sparkles" href="/platform/replayfy-ai">
+What credits buy, and how the assistant, investigations, and signals work.
+</Card>
+<Card title="Install the SDK" icon="code" href="/platforms/web">
+Grab your workspace's keys and start recording sessions.
+</Card>
+</CardGroup>

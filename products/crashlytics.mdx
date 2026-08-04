@@ -1,0 +1,255 @@
+---
+title: "Crashlytics"
+description: "Automatically capture crashes, exceptions, and mobile UI freezes, group them into ranked issues, and jump straight to the session recording where each one happened."
+---
+
+Crashlytics turns the errors your app throws into a short, ranked list of **issues** you can act on. Every crash, handled exception, and mobile UI freeze is captured automatically, grouped by signature (so one bug is one row — not a thousand loose events), and linked to the exact session recording where it happened. Instead of reading a raw stack in isolation, you watch the user hit the bug, see the network calls and taps that led up to it, and know how many people it affects.
+
+Nothing here is templated or AI-guessed: the occurrence, session, and user counts are exact SQL aggregates over the crashes your SDK reported.
+
+<Note>
+Crashlytics is powered by the same session-replay SDK you already install for recordings and analytics. If replay is running, error capture is on by default — there is no separate agent to add. See the platform guides for [Web](/platforms/web), [iOS](/platforms/ios), [Android](/platforms/android), [React Native](/platforms/react-native), and [Flutter](/platforms/flutter).
+</Note>
+
+## How errors are captured
+
+Once the SDK is initialized, it hooks the runtime's error paths for you:
+
+| Source | Captured automatically |
+| --- | --- |
+| **Web** | Uncaught `window.onerror` exceptions and unhandled promise rejections. Controlled by the `captureErrors` config option (default **on**). |
+| **iOS / Android** | Fatal crashes (uncaught exceptions, signals) plus native performance vitals. |
+| **iOS / Android** | **ANR / UI freezes** — when the main thread is blocked long enough that the UI stops responding. |
+| **Any platform** | Handled errors you report yourself with [`captureException`](#report-handled-errors-from-code). |
+
+Each captured error is fingerprinted from its type, message, and stack, then folded into an **issue** — the cross-session aggregate. Repeats inside a single session are counted once toward "sessions affected" but summed toward total events, so a retry loop can't distort your user counts.
+
+### Error categories
+
+Every issue is classified into one category, shown as a colored chip on the homepage and as the segmented filter on the Crashlytics page:
+
+| Category | What it means | Counts against crash-free? |
+| --- | --- | --- |
+| **Crash** | A fatal, unhandled error that ended the session. | Yes |
+| **Exception** | A handled error you reported with `captureException` (or a caught, recovered error). | No |
+| **Error** | A non-fatal error the runtime surfaced but the app survived. | No |
+| **Freeze** | A mobile UI-thread freeze / ANR — the app was unresponsive but didn't crash. | No |
+
+<Info>
+A freeze is its own category, not a crash — so a sluggish screen never quietly drags down your crash-free rate. Only true crashes do.
+</Info>
+
+## The Crashlytics page
+
+Two surfaces show your errors in the dashboard at [app.replayfy.app](https://app.replayfy.app):
+
+- **Homepage stability chips** — a quick pulse of crash-free rate and your top crashes, right on the overview.
+- **The dedicated Crashlytics page** — the full, filterable investigation surface. Open it from the left nav.
+
+At the top of the Crashlytics page a stat strip gives you the live totals for the current filter — **Issues**, **Crashes**, **Exceptions**, and **Freezes**. These are set-based counts across your whole workspace, not a tally of the rows currently on screen, so they stay accurate no matter how far you've scrolled.
+
+<Steps>
+  <Step title="Filter by category">
+    Use the segmented control to switch between **All**, **Crashes**, **Exceptions**, and **Freezes**.
+  </Step>
+  <Step title="Narrow with the multi-filter">
+    The **Filter** button opens a popover to combine:
+
+    | Filter | Options |
+    | --- | --- |
+    | **Status** | Open · Regressed · Resolved · Ignored |
+    | **Platform** | Every platform that has reported an issue (web, iOS, Android, …) |
+    | **Release** | Every build/release version seen in your issues |
+    | **Last seen** | 24h · 7d · 30d · Any time |
+
+    Everything is applied server-side, so the results span the whole workspace.
+  </Step>
+  <Step title="Search the stack">
+    The search box matches issue title, message, culprit, and error type — the text you'd otherwise grep for. It searches every issue in the workspace, not just the loaded page.
+  </Step>
+</Steps>
+
+### Reading the list
+
+Issues are ranked by blast radius — how many distinct users and sessions each one hit, with fatal crashes weighted highest — so the most damaging bug is always at the top. Each row shows:
+
+- The **error type and message**, its category icon, platform, and last release.
+- A **status** badge (see below).
+- A **14-day trend** sparkline so you can see whether it's spiking or fading.
+- **Unique users** and **Events** (total occurrences).
+- When it was **last seen**.
+
+The list pages 10 at a time with infinite scroll — a keyset cursor under the hood — so even a workspace with a huge backlog loads smoothly.
+
+<AccordionGroup>
+  <Accordion title="What the status badges mean" icon="bug">
+    | Badge | Meaning |
+    | --- | --- |
+    | **New** | First seen in the last 24 hours. |
+    | **Open** | Active and unresolved — the default view. |
+    | **Regressed** | You resolved it, but it came back in a later session. Regressions reopen automatically so a "fixed" bug can't slip by unnoticed. |
+    | **Resolved** | You marked it fixed. |
+    | **Ignored** | Muted — hidden from the default view but still counted. |
+
+    By default the list shows what's **actively broken** (Open + Regressed). Add Resolved or Ignored in the filter to see the rest.
+  </Accordion>
+</AccordionGroup>
+
+## Investigating an issue
+
+Click any row to open the investigation drawer. It paints the summary instantly, then fills in the deep context:
+
+- **Header** — the error type, message, culprit, platform, release, and a short fingerprint id you can reference.
+- **Stats** — Events, Unique users, Sessions, First seen, Last seen.
+- **Occurrences** — the 14-day trend as a bar chart, so you can line up a spike against a deploy.
+- **Stack trace** — the representative stack for this issue, with your own code (in-app frames) visually separated from framework/system frames, and an "N in app" count so you spot your line first.
+- **Network** — the failing or slow requests around the crash, with method, status, URL, and duration — often the real root cause.
+- **Where it happens** — the top browsers, operating systems, and countries the issue is concentrated in, so you know whether it's universal or specific to one platform or region.
+- **Breadcrumbs** — the last handful of events (screens, taps, console, network, errors) leading up to the crash.
+
+<Tip>
+The most useful part of the drawer is **Recent occurrences** — each one links straight to the session replay. Click **Replay** on any occurrence to watch that exact user hit the bug, or use **View all recordings** in the footer to open every session where the issue fired. This is the difference between reading a stack trace and *seeing* what the user did.
+</Tip>
+
+## Crash-free rate
+
+The homepage stability tiles show your **crash-free sessions** rate — the share of sessions in the window that ended without a fatal crash — along with the change versus the previous period.
+
+<Warning>
+Crash-free rate is only computed once a window has **at least 20 completed sessions**. Below that there's no denominator worth trusting, so the tile shows `—` rather than a misleading "0.00%". Freezes and handled exceptions never count against this number — only crashes do.
+</Warning>
+
+On mobile, an **ANR rate** tile appears alongside it. Web-only workspaces simply won't see the ANR row.
+
+## Report handled errors from code
+
+Automatic capture only sees errors that reach the runtime's top level. For anything you catch — a failed API call, a recovered parse error, a `try/catch` around risky work — call `captureException` so it becomes a first-class issue too. Reported errors are parsed identically to automatic ones, so they show the same stack, breadcrumbs, and linked recording.
+
+The `handled` flag decides the category: **`handled: true`** (the default) files it as an **Exception**; **`handled: false`** marks it fatal and files it as a **Crash**.
+
+<CodeGroup>
+```ts npm (web)
+import { initReplay } from "@replayfyapp/browser";
+
+const replay = initReplay({
+  apiKey: "rpl_pk_YOUR_KEY",
+  apiHost: "https://us.replayfy.app",
+  captureErrors: true, // automatic window errors (default on)
+  revId: "1.4.2",       // associate this build with its issues
+});
+
+try {
+  await checkout(cart);
+} catch (err) {
+  // handled defaults to true → files as an "Exception"
+  replay.captureException(err);
+}
+```
+
+```html CDN (web)
+<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+<script>
+  Replayfy.init({
+    apiKey: "rpl_pk_YOUR_KEY",
+    apiHost: "https://us.replayfy.app",
+  });
+
+  try {
+    riskyThing();
+  } catch (err) {
+    // pass handled: false to record it as a fatal Crash instead
+    Replayfy.captureException(err, { handled: false });
+  }
+</script>
+```
+
+```swift iOS
+import Replay
+
+do {
+    try sync()
+} catch {
+    // handled defaults to true → "Exception"
+    Replay.captureException(error, properties: ["where": "sync"])
+}
+
+// Mark a caught error as fatal → "Crash"
+Replay.captureException(error, handled: false)
+```
+
+```kotlin Android
+import com.replayfy.android.Replay
+
+try {
+    upload()
+} catch (e: Throwable) {
+    // handled = true (default) → "Exception"
+    Replay.captureException(e, handled = true, properties = mapOf("screen" to "checkout"))
+}
+```
+</CodeGroup>
+
+<Note>
+`rpl_pk_` keys are **publishable** — safe to ship inside a web bundle or mobile app. Keep `rpl_sk_` server keys out of client code.
+</Note>
+
+## Readable stack traces (symbolication)
+
+Release builds ship obfuscated or stripped stacks — R8-renamed class names on Android, raw program counters in native code. Replayfy deobfuscates them **at render time**, when you open an issue, against symbols you upload for that build. Because symbolication is deferred, you can upload symbols *after* a crash spike has already arrived and the old crashes light up retroactively.
+
+### Android
+
+<Steps>
+  <Step title="Upload your mapping for each build">
+    Upload the R8/ProGuard `mapping.txt` (JVM) and, for native code, the unstripped `lib<name>.<abi>.so` debug binaries. The easiest path is the Gradle plugin `com.replayfy.symbols`, which uploads them from your build pipeline automatically. You can also POST them from a CI step to `/v1/replay/symbols/{platform}/{version}/{build}/{filename}`, authenticated with your project's ingest key (`x-replay-api-key`).
+  </Step>
+  <Step title="Match the version and build">
+    Symbols are stored per **version + build**, so those must match what the SDK reported with the crash. The SDK auto-detects your app version and build; override them with `setAppVersion(version, build)` if you ship white-label or wrapper builds.
+  </Step>
+  <Step title="Open the issue">
+    When you expand a crash in the dashboard, the stack is deobfuscated on the fly. Re-uploading an updated mapping after a hotfix just works — no migration, and the same crash re-symbolicates against the new file.
+  </Step>
+</Steps>
+
+<Info>
+Uploads are idempotent and capped at 50 MB per file. If a symbol file is larger than that, strip third-party and unneeded debug symbols in your build before uploading.
+</Info>
+
+### iOS
+
+iOS crashes arrive **already partially symbolicated** on-device, so you get readable frames without uploading dSYMs. Full dSYM-based deobfuscation is on the roadmap; for now, no upload step is required to read iOS stacks.
+
+### Associating a build or release
+
+Tagging every session with its build unlocks the **Release** filter and lets you pin a crash spike to a specific deploy:
+
+- **Web** — set `revId` in your init config.
+- **iOS / Android** — the app version and build are auto-detected; override with `setAppVersion(...)` when needed.
+
+Once builds are flowing, use the Crashlytics **Release** filter to answer "did my last deploy regress?" in one click.
+
+## Managing issues
+
+From any row's actions menu or the drawer footer you can:
+
+- **Resolve** — mark it fixed. It leaves the default view. If a matching error shows up in a later session, it automatically reopens as **Regressed**.
+- **Ignore** — mute a known-benign or third-party issue without deleting its history.
+- **Reopen** — bring a resolved or ignored issue back to Open.
+
+<Check>
+Resolving an issue here also updates the homepage stability chips and the category counts — one action, reflected everywhere.
+</Check>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Session Replay" icon="play" href="/products/session-replay">
+    Watch the exact session where any crash happened.
+  </Card>
+  <Card title="Track Events" icon="chart-line" href="/guides/track-events">
+    Add context so breadcrumbs tell the full story.
+  </Card>
+  <Card title="Alerts" icon="bell" href="/products/alerts">
+    Get notified when a new or regressed issue spikes.
+  </Card>
+</CardGroup>

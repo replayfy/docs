@@ -1,0 +1,250 @@
+---
+title: "Integrations"
+description: "Connect issue trackers, chat, incident tools, and a generic webhook to your workspace so Replayfy can file issues from a recording and route alerts to the tools your team already uses."
+---
+
+Integrations let a workspace push what Replayfy sees — a specific recording, a crash group, or a fired alert — into the tools your team already lives in. File an issue from a session in one click, or route an anomaly signal straight to your on-call channel with a link back to the exact moment it happened.
+
+Every connection is **scoped to a single workspace**. When you connect Slack (or Linear, or Jira…), you authorize *your* workspace's account — Replayfy never uses a shared or global key, so a company with several workspaces keeps each one's tools cleanly isolated.
+
+<Note>
+  Find everything under **Settings → Integrations** at [app.replayfy.app](https://app.replayfy.app). You need the **Member** role or higher to connect, manage, or disconnect an integration.
+</Note>
+
+## How integrations work
+
+There are two ways an integration connects, depending on the partner:
+
+- **OAuth** — you're sent to the partner (Slack, Linear, Jira, GitHub, Lark, Sentry), you approve access to the account and scopes shown, and you land back in Replayfy connected. A signed, single-use `state` binds the round-trip to your workspace, so the callback can only ever connect *your* workspace.
+- **A short form** — for partners that hand you a credential to paste instead of an OAuth flow: **PagerDuty** (an Events API v2 integration key) and **Webhook** (a destination URL).
+
+Whichever path a partner uses, the stored credential is **encrypted at rest** and decrypted only at the moment Replayfy calls out. Disconnecting an integration **drops the stored token immediately**, and Replayfy only ever touches the scopes listed on the integration's detail page.
+
+## The catalog
+
+The catalog is grouped by what each integration is for. Every one below is live and connectable per workspace.
+
+| Integration | Category | Connect via | Use it for |
+| --- | --- | --- | --- |
+| **Linear** | Issue tracking | OAuth | File issues from a session, crash, or signal |
+| **Jira** | Issue tracking | OAuth | Create tickets from sessions and crashes |
+| **GitHub** | Issue tracking | OAuth | Open issues for captured errors and crashes |
+| **Slack** | Alerts & messaging | OAuth | Post alerts and share replays in a channel |
+| **PagerDuty** | Alerts & messaging | Integration key | Trigger on-call incidents from signals |
+| **Lark** | Alerts & messaging | OAuth | Deliver alerts to a group chat |
+| **Sentry** | Monitoring & developer | OAuth | Link an error to the exact replay |
+| **Webhook** | Monitoring & developer | Destination URL | POST Replayfy events as JSON anywhere |
+
+<Tip>
+  Slack is the most-used integration because it does double duty — it's both an **alert destination** and a place you can **file an issue** (a rich message) about a single recording.
+</Tip>
+
+## Connect an integration
+
+<Tabs>
+  <Tab title="OAuth (Slack, Linear, Jira, GitHub, Lark, Sentry)">
+    <Steps>
+      <Step title="Open the integration">
+        Go to **Settings → Integrations**, pick the integration, and open its detail page.
+      </Step>
+      <Step title="Start the connection">
+        Click **Connect**. Replayfy generates a signed authorize URL and sends you to the partner.
+      </Step>
+      <Step title="Approve access">
+        Sign in to the partner if needed and approve the scopes shown on the detail page. Replayfy asks only for what it needs — for an issue tracker, that's creating issues in a team or repository you choose plus reading status.
+      </Step>
+      <Step title="Land back connected">
+        The partner returns you to **Settings → Integrations** with a confirmation toast, and the integration now shows a green **Connected** dot. Replayfy resolves and stores a sensible default target (a Linear team, a GitHub repo, a Slack channel, a Jira project) at connect time.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="PagerDuty (integration key)">
+    <Steps>
+      <Step title="Create an Events API v2 integration in PagerDuty">
+        In PagerDuty, open the service you want incidents on → **Integrations** → add an **Events API v2** integration, then copy its **Integration Key**.
+      </Step>
+      <Step title="Paste the key in Replayfy">
+        Open **Settings → Integrations → PagerDuty**, click **Connect**, and paste the key.
+      </Step>
+      <Step title="We verify before saving">
+        Replayfy runs a test trigger-and-resolve against the key so a bad key fails now, at connect time, rather than silently at the first real alert. Once it verifies, PagerDuty shows as **Connected**.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Webhook (destination URL)">
+    <Steps>
+      <Step title="Enter your endpoint URL">
+        Open **Settings → Integrations → Webhook**, click **Connect**, and enter the `https://` URL that should receive events.
+      </Step>
+      <Step title="Copy the signing secret">
+        Replayfy mints a strong signing secret (it looks like `whsec_…`) and shows it once with a **Copy** button. Store it — you'll use it to verify that incoming requests really came from Replayfy. Reopening a connected webhook re-reveals the same secret.
+      </Step>
+      <Step title="Save">
+        Every event is now POSTed to your URL as JSON, signed with that secret. You can edit the URL later without rotating the secret, so your verification keeps working.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Route alerts to a destination
+
+When an alert or anomaly signal fires — a crash spike, a funnel drop, a conversion dip — Replayfy can fan it out to the destinations you've connected. Three integrations act as **alert destinations**:
+
+| Destination | What arrives |
+| --- | --- |
+| **Slack** | A rich message with the title, detail, and a link back to Replayfy |
+| **PagerDuty** | An incident on your service, deduplicated, that auto-resolves when the signal clears |
+| **Webhook** | An `alert.triggered` JSON payload POSTed to your endpoint |
+
+You pick the destinations when you configure an alert. Each fired alert dispatches to its destinations **concurrently**, and a destination you haven't connected is simply skipped — nothing errors, it just doesn't deliver there. Connect the destination first, then add it to the alert.
+
+<Info>
+  Configuring which alerts fire and where they route lives on the Alerts page, not here — this page is only about connecting the destinations. See [Alerts](/products/alerts) for building the conditions.
+</Info>
+
+## File an issue from a recording
+
+You don't have to leave a session to open a ticket about it. From a recording's player, use **Create issue** to file straight into a connected tracker. The issue is pre-filled with the session link and a summary — the user, the URL, the duration, and the error and rage-click counts — so an engineer lands on the exact moment it happened.
+
+<Steps>
+  <Step title="Open a recording and click Create issue">
+    In the player's action bar, click **Create issue**. A picker lists the integrations that can file about a session: **Linear, GitHub, Jira, Lark, and Slack**.
+  </Step>
+  <Step title="Pick where to file it">
+    Choose a tracker. If it's already connected, Replayfy files immediately and shows you the created issue's URL to copy (for Slack or Lark, it confirms the channel it posted to).
+  </Step>
+  <Step title="Not connected yet? It still works">
+    Pick a tracker you haven't connected and Replayfy remembers your intent, runs the connect flow, and files the issue automatically the moment you return — no need to start over.
+  </Step>
+</Steps>
+
+<Note>
+  Filing an issue is scoped to your workspace: you can only ever file about a session that belongs to the workspace you're in.
+</Note>
+
+## Verify webhook payloads
+
+Every webhook request carries an `X-Replayfy-Signature` header — the string `sha256=` followed by an HMAC-SHA256 of the **raw request body**, keyed with your signing secret. Recompute it on your side and compare before trusting a request.
+
+A fired alert arrives like this:
+
+```json alert.triggered
+{
+  "event": "alert.triggered",
+  "workspaceId": 42,
+  "alert": {
+    "title": "Crash spike on CartView",
+    "detail": "98 sessions affected in the last hour",
+    "severity": "critical",
+    "url": "https://app.replayfy.app/recordings?signal=…"
+  }
+}
+```
+
+Verify it against the secret you copied when connecting:
+
+<CodeGroup>
+
+```js Node.js (Express)
+import express from "express";
+import crypto from "node:crypto";
+
+const SIGNING_SECRET = process.env.REPLAYFY_WEBHOOK_SECRET; // whsec_…
+const app = express();
+
+// Use the RAW body — the signature is computed over the exact bytes we send.
+app.post(
+  "/hooks/replayfy",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const received = req.header("X-Replayfy-Signature") ?? "";
+    const expected =
+      "sha256=" +
+      crypto.createHmac("sha256", SIGNING_SECRET).update(req.body).digest("hex");
+
+    const ok =
+      received.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(received), Buffer.from(expected));
+    if (!ok) return res.status(401).send("bad signature");
+
+    const payload = JSON.parse(req.body.toString("utf8"));
+    // e.g. payload.event === "alert.triggered"
+    console.log(payload.event, payload.alert?.title);
+
+    // Acknowledge fast with any 2xx.
+    res.sendStatus(200);
+  },
+);
+
+app.listen(3000);
+```
+
+```python Python (Flask)
+import hashlib, hmac, os
+from flask import Flask, request, abort
+
+SIGNING_SECRET = os.environ["REPLAYFY_WEBHOOK_SECRET"].encode()  # whsec_…
+app = Flask(__name__)
+
+@app.post("/hooks/replayfy")
+def replayfy_hook():
+    received = request.headers.get("X-Replayfy-Signature", "")
+    expected = "sha256=" + hmac.new(
+        SIGNING_SECRET, request.get_data(), hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(received, expected):
+        abort(401)
+
+    payload = request.get_json()
+    # payload["event"] == "alert.triggered"
+    return "", 200
+```
+
+</CodeGroup>
+
+<Warning>
+  Compute the HMAC over the **unparsed** request body. If your framework parses and re-serializes JSON before you sign, the bytes change and the signature won't match. Reach for the raw body (as shown above).
+</Warning>
+
+Respond with any `2xx` to acknowledge receipt. A non-2xx is treated as a failed delivery for that event.
+
+## Disconnect an integration
+
+<Steps>
+  <Step title="Open the integration and click Disconnect">
+    Go to **Settings → Integrations**, open the connected integration, and click **Disconnect**.
+  </Step>
+  <Step title="Confirm">
+    A dialog explains that the workspace will stop being able to file or post to that partner. Confirm to proceed.
+  </Step>
+  <Step title="The token is dropped immediately">
+    Replayfy revokes at the partner where possible and deletes the stored credential right away. You can reconnect at any time — for an OAuth partner that just means running the connect flow again.
+  </Step>
+</Steps>
+
+## Permissions and data access
+
+<AccordionGroup>
+  <Accordion title="Who can manage integrations?" icon="shield-halved">
+    Connecting, disconnecting, and viewing integration status all require the **Member** role or higher. The credential itself is never exposed back to the dashboard — the connections list returns only which providers are connected, never a token.
+  </Accordion>
+  <Accordion title="What does Replayfy access?" icon="key">
+    Only the scopes listed on each integration's detail page — for example, "create issues in a team you choose" and "read and write issue status" for an issue tracker. Replayfy requests the minimum needed to file issues and post alerts, and nothing more.
+  </Accordion>
+  <Accordion title="How are credentials stored?" icon="lock">
+    OAuth tokens, PagerDuty keys, and webhook URLs are encrypted at rest and decrypted only at call time. OAuth tokens are refreshed automatically before they expire. Disconnecting deletes the stored credential immediately.
+  </Accordion>
+</AccordionGroup>
+
+<CardGroup cols={3}>
+  <Card title="Alerts" icon="bell" href="/products/alerts">
+    Build the conditions that fire, and choose which connected destinations they route to.
+  </Card>
+  <Card title="Session replay" icon="play" href="/products/session-replay">
+    Open a recording and file an issue about the exact moment something went wrong.
+  </Card>
+  <Card title="Crash reporting" icon="bug" href="/products/crashlytics">
+    Turn a crash group into a tracked issue in Linear, Jira, or GitHub.
+  </Card>
+</CardGroup>

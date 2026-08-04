@@ -1,0 +1,265 @@
+---
+title: "Funnels"
+description: "Build a funnel from your tracked events, measure step-by-step conversion and completion time, dig into who dropped off, and get alerted when conversion moves."
+---
+
+A funnel is an **ordered sequence of steps** — a page view, a click, a custom
+event, a mobile screen — and Replayfy tells you how many people made it from one
+step to the next, how long it took, and exactly where they fell out. Because
+every step is a real event your SDK already sends, you can jump straight from any
+step (or drop-off) into the session recordings behind the numbers.
+
+Funnels live under **Funnels** in the dashboard at
+[app.replayfy.app](https://app.replayfy.app). Open one and you get conversion
+rate, per-step drop-off, median and p95 completion time, a breakdown by any
+dimension, and conversion over time — all computed live from the date range you
+pick.
+
+<Info>
+  A funnel counts sessions that hit **every step in order** inside a
+  **conversion window**. A session that reaches step 3 before step 2 does not
+  count as converting through step 2 — order matters.
+</Info>
+
+## Build a funnel
+
+<Steps>
+  <Step title="Create a new funnel">
+    Go to **Funnels → New funnel**. Start from a blank builder, or pick a
+    ready-made template (e.g. *Signup*, *Checkout*) and edit it. Nothing is
+    saved until you name it and click **Save**.
+  </Step>
+  <Step title="Add your first step">
+    Each step has two parts: the **event type** (what kind of action) and a
+    **match condition** on its value. Click the step to open the editor, choose
+    the event type, then choose an operator and type a value.
+  </Step>
+  <Step title="Let autocomplete find your event names">
+    As you type a value, Replayfy suggests the **event names actually seen in
+    your workspace** — page URLs, click text, custom event names, or mobile
+    screens — most-common first, with a live count next to each. Pick a
+    suggestion, or type any value and choose **Use "…"** to match a name that
+    hasn't been recorded yet.
+  </Step>
+  <Step title="Add more steps, in order">
+    Click **Add step** (or the **+** between steps) to extend the flow. Drag the
+    grip to reorder. Analytics appear once the funnel has **at least two steps**
+    with a value.
+  </Step>
+  <Step title="Name it and save">
+    Give the funnel a name and click **Save**. Saved funnels can be pinned to the
+    dashboard, alerted on, and used to build cohorts.
+  </Step>
+</Steps>
+
+### Step types
+
+A step matches one kind of event. The condition operates on the field shown in
+the last column.
+
+| Step type | What it matches | Matches on | Platform |
+| --- | --- | --- | --- |
+| **Viewed page** | A visited page URL | URL | Web |
+| **Clicked element** | An element the user clicked | Text | Web |
+| **Custom event** | An event you send from code | Event name | All |
+| **Viewed screen** | A screen the user opened | Screen name | Mobile |
+| **Tapped element** | An element the user tapped | Text | Mobile |
+
+### Match conditions
+
+| Operator | Behavior |
+| --- | --- |
+| **contains** | Value appears anywhere in the field |
+| **is exactly** | Field equals the value |
+| **starts with** | Field begins with the value |
+| **matches regex** | Field matches a regular expression |
+
+<Tip>
+  Leave a step's value blank to match **any value** of that event type — useful
+  for a step like "viewed any screen" or "clicked anything" as a loose gate.
+</Tip>
+
+## Feed funnel steps from your SDK
+
+Page views, clicks, taps, and screens are captured automatically once the SDK is
+installed. **Custom events** are the ones you send yourself — call
+`replay.track()` with a stable name, and that name becomes selectable as a
+**Custom event** step (it shows up in the step autocomplete).
+
+<CodeGroup>
+```ts Web / React Native
+// Emit a custom event — the name is what a "Custom event" step matches.
+replay.track("checkout_completed", { plan: "pro", amount: 4900 });
+```
+
+```swift iOS
+Replay.track("checkout_completed", properties: ["plan": "pro"])
+```
+
+```kotlin Android
+Replay.track("checkout_completed", mapOf("plan" to "pro"))
+```
+</CodeGroup>
+
+<Note>
+  Use a small set of **stable, human-readable** event names
+  (`checkout_completed`, not `evt_9f2`). The step picker lists what you've
+  actually sent, so consistent names make funnels far easier to build. See
+  [Track custom events](/guides/track-events).
+</Note>
+
+## The conversion window and date range
+
+Two different time controls shape every funnel:
+
+- **Conversion window** — how long a session has to get from the first step to
+  the last and still count as converting. Set it per funnel between **1 and 90
+  days** (the default is 7). A checkout might use 1 day; an onboarding flow might
+  use 30.
+- **Date range** — the span of history the funnel is computed over, chosen from
+  the date picker in the top-right. Presets (Last 7 / 14 / 30 days, and more)
+  are rolling windows ending now; you can also pick a **custom** start and end.
+
+<Warning>
+  These are independent. The **date range** decides *which sessions* are
+  analysed; the **conversion window** decides *how much time each session gets*
+  to complete the flow. Widening the date range shows more history — it does not
+  give users longer to convert.
+</Warning>
+
+### Compare to the previous period
+
+Open the date picker and switch on **Compare to previous period**. Every headline
+number — entered, conversion, converted, biggest drop — gains a ▲/▼ delta versus
+the immediately preceding window of equal length, so you can see whether the flow
+is improving or regressing.
+
+## Read the results
+
+Once a funnel has two or more valid steps, the summary row and step bars fill in
+with real counts.
+
+| Metric | Meaning |
+| --- | --- |
+| **Entered** | Count reaching step 1 (the top of the funnel) |
+| **Conversion** | Share of entrants who completed **all** steps |
+| **Converted** | Count reaching the final step |
+| **Median time** | Median time to get from step 1 to the last step, with **p95** alongside |
+| **Biggest drop** | The single largest step-to-step fall, and where it happens |
+
+Select any step to see its own detail: **Reached** (count at that step), **Step
+conversion** (share carried over from the previous step), **Dropped here** (count
+and percent lost at this transition), and **Time to reach** — the median and
+**p95** time to move from the previous step to this one.
+
+<Info>
+  **Median and p95 completion times are real**, measured over the sessions that
+  actually made each transition. When too few sessions completed a step to
+  measure a time, Replayfy shows `—` rather than a fabricated number.
+</Info>
+
+### Sessions or users
+
+Use the **Sessions / Users** toggle to change the count unit. **Sessions** counts
+every qualifying session; **Users** counts **distinct identified users** (anonymous
+visitors are excluded, since they can't be de-duplicated across sessions). Call
+`replay.identify()` so more of your traffic is attributable in *Users* mode.
+
+### Other views
+
+- **Breakdown** — split conversion by a dimension (platform, browser, OS, device,
+  country, plan, release, UTM source/medium/campaign) to see which segment
+  converts best.
+- **Conversion over time** — a daily line of conversion rate across the range, to
+  spot a regression the day it started.
+- **Metric** — just the headline conversion number, large, for a quick read or a
+  pinned dashboard tile.
+
+## Drop-off analysis
+
+The most valuable part of a funnel is *who left and why*. Every step is a doorway
+into the sessions behind it.
+
+### Watch the sessions that reached a step
+
+On any step's detail, click **View sessions** to open the recordings list scoped
+to the sessions that reached that step, over the same date range the funnel is
+using. For a saved funnel this is a server-resolved, paged scope (up to the
+newest 5,000 reached sessions) — so you can scroll through real recordings of
+people who got exactly that far.
+
+### Turn a drop-off into a cohort
+
+From **step 2 onward**, the step detail shows **Create cohort**. This builds a
+cohort of the **identified users who reached the previous step but not this one**
+— the people who dropped out right here.
+
+<Steps>
+  <Step title="Open the modal">
+    Select the step where the drop-off happens and click **Create cohort**. The
+    funnel must be **saved** first (the cohort is built from the saved
+    definition).
+  </Step>
+  <Step title="Review the count">
+    Replayfy previews how many **identified** users dropped at this step over the
+    current window before you commit.
+  </Step>
+  <Step title="Name and create">
+    Give the cohort a name and create it. You'll get a link straight to its
+    members on the Users page.
+  </Step>
+</Steps>
+
+<Note>
+  A drop-off cohort is a **point-in-time snapshot** — it captures who dropped as
+  of now and won't update as new users fall out. It includes only **identified**
+  users, so its size can differ from the session-level drop-off shown above
+  (which includes anonymous visitors). Re-create it to refresh.
+</Note>
+
+## Get alerted when conversion moves
+
+Click **Alert** in the funnel header (available on a saved funnel) to be emailed
+when overall conversion changes. Funnel-conversion alerts are **email-only** and
+evaluated **once daily** off the conversion history.
+
+| Condition | Fires when |
+| --- | --- |
+| **Drops by** | Conversion falls by more than *X%* relative to the previous equal-length window |
+| **Falls below** | Conversion drops under a fixed *X%* over the funnel's window |
+
+Add **multiple recipients** — it defaults to your account email, and you can add
+anyone else on your team (press Enter or comma between addresses). Manage or
+delete funnel alerts anytime from the [Alerts](/products/alerts) page.
+
+<Check>
+  Alerts read the same conversion history the funnel shows, so a threshold you
+  set here means exactly what the dashboard displays.
+</Check>
+
+## Built by Replayfy AI
+
+You don't always have to build a funnel by hand. Ask **Replayfy AI** to create
+one — *"build a signup funnel from landing to activated"* — and it assembles the
+ordered steps for you. Funnels the assistant creates carry a **Created with
+Replayfy AI** badge next to the title, so it's always clear where a definition
+came from. You can edit an AI-built funnel exactly like any other. Learn more in
+[Replayfy AI](/platform/replayfy-ai).
+
+## Pin to the dashboard
+
+Click **Pin to dashboard** to surface a funnel's conversion on your Overview. The
+pinned widget computes over the funnel's saved conversion window, so the number
+on Overview always matches the funnel page.
+
+<CardGroup cols={3}>
+  <Card title="Track custom events" icon="code" href="/guides/track-events">
+    Send the named events your Custom event steps match on.
+  </Card>
+  <Card title="Alerts" icon="bell" href="/products/alerts">
+    Manage conversion alerts and every other alert in one place.
+  </Card>
+  <Card title="Replayfy AI" icon="wand-magic-sparkles" href="/platform/replayfy-ai">
+    Let the assistant build funnels and investigate drop-off.
+  </Card>
+</CardGroup>

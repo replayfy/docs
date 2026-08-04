@@ -1,0 +1,198 @@
+---
+title: "Cohorts"
+description: "Save a group of users defined by their traits or their behavior, keep it up to date automatically, and use it to focus every screen in Replayfy on the segment that matters."
+---
+
+A **cohort** is a saved, living group of users — "Power users", "Churn risk", "Enterprise trials", "Everyone who dropped at checkout". You define it once, and Replayfy keeps its membership current for you: people join and leave the cohort as their behavior and properties change. From then on, a cohort is a lens you point at your data — open its members, drill into their session replays, and target the exact audience you care about.
+
+<Info>
+Cohorts group **users**, not sessions. Every member is an end user you identify from your SDK (or an anonymous-but-tracked visitor). The richer the traits and events you send, the more precisely you can slice your audience — see [Feed cohorts with the right data](#feed-cohorts-with-the-right-data).
+</Info>
+
+## Two ways to define membership
+
+Every cohort is either **auto-updated** or **manual**. You choose this when you create it.
+
+| Membership | How it works | Best for |
+| --- | --- | --- |
+| **Auto-updated** | You write rules. Anyone who matches is a member; anyone who stops matching drops out — automatically, as new data arrives. | Living segments — "active this week", "on the Enterprise plan", "fired `payment_success`". |
+| **Manual** | You hand-pick a fixed set of users. Membership only changes when you edit it. | Curated lists — VIP accounts, a hand-built beta group, a point-in-time snapshot. |
+
+<Note>
+Auto-updated cohorts stay fresh on their own — you never have to press a button to keep them accurate. As sessions and events flow in, membership is re-evaluated continuously (typically within a few minutes). You can still force an immediate refresh with **Recompute** from any cohort's `⋯` menu.
+</Note>
+
+## Attribute vs behavioral cohorts
+
+Auto-updated cohorts are built from **rules**. Rules fall into two families, and you can mix them freely in one cohort:
+
+- **Attribute cohorts** match on *who a user is* — the traits and properties you send with `identify`. Plan, device, browser, OS, country, city, email, name. These change rarely, so these cohorts settle quickly.
+- **Behavioral cohorts** match on *what a user does* — their activity and the events you `track`. "Has ≥ 12 sessions", "seen in the last 7 days", "fired `checkout_started`", "currently online". These are re-evaluated as activity happens.
+
+### Supported rule conditions
+
+Each rule is a **field**, an **operator**, and a **value**. Add as many rules as you like — a user must match **all** of them to be a member.
+
+| Field | Type | Operators | Example |
+| --- | --- | --- | --- |
+| Plan | Attribute | is / is not | Plan **is** `Enterprise` |
+| Device | Attribute | is / is not | Device **is** `Mobile` |
+| Browser | Attribute | is / is not | Browser **is** `Safari` |
+| OS | Attribute | is / is not | OS **is** `iOS` |
+| Country | Attribute | is / is not | Country **is** `United States` |
+| City | Attribute | equals / contains / starts with / ends with | City **contains** `London` |
+| Email | Attribute | equals / contains / starts with / ends with | Email **ends with** `@acme.com` |
+| Name | Attribute | equals / contains / starts with / ends with | Name **contains** `Admin` |
+| Total sessions | Behavioral | ≥ / > / = | Total sessions **≥** `12` |
+| Last seen | Behavioral | within the last _N_ days / more than _N_ days ago | Last seen **within the last** `7` days |
+| Currently online | Behavioral | is true / is false | Currently online **is true** |
+| Did event | Behavioral | fired / did not fire | Did event **fired** `payment_success` |
+
+<Tip>
+"Did event" reads straight off the events you send with `track`. Use it for any "users who completed X" question — `fired` for users who did it, `did not fire` for users who never have.
+</Tip>
+
+## Feed cohorts with the right data
+
+Attribute and behavioral rules only work if your SDK is sending the underlying signal. Identify your users with the traits you want to segment on, and track the events you want to build behavioral cohorts from.
+
+<CodeGroup>
+```ts Web (npm)
+import Replay from "@replayfyapp/browser";
+
+const replay = Replay.init({
+  apiKey: "rpl_pk_YOUR_KEY",          // publishable key — safe to ship
+  apiHost: "https://us.replayfy.app", // your ingest host
+});
+
+// Attributes → power "Plan is Pro", "Email ends with @acme.com", etc.
+replay.identify("user_8f21", {
+  email: "ada@acme.com",
+  name: "Ada Lovelace",
+  plan: "Pro",
+});
+
+// Events → power "Did event fired payment_success"
+replay.track("payment_success", { amount: 4900, currency: "usd" });
+```
+
+```html Web (CDN)
+<script src="https://us.replayfy.app/sdk/replay.js"></script>
+<script>
+  Replay.init({
+    apiKey: "rpl_pk_YOUR_KEY",
+    apiHost: "https://us.replayfy.app",
+  });
+
+  Replay.identify("user_8f21", { email: "ada@acme.com", plan: "Pro" });
+  Replay.track("payment_success", { amount: 4900, currency: "usd" });
+</script>
+```
+</CodeGroup>
+
+<Warning>
+Only ship the **publishable** key (`rpl_pk_…`) in client apps. Server keys (`rpl_sk_…`) are for backend calls and must never appear in shipped code. See [Track events](/guides/track-events) for naming conventions and [Web setup](/platforms/web) for the full install.
+</Warning>
+
+## Create a cohort
+
+<Steps>
+<Step title="Open the builder">
+Go to **Cohorts** and click **New cohort** (or press <kbd>N</kbd> then <kbd>C</kbd>). You'll land on the template gallery.
+</Step>
+
+<Step title="Start from a template or from scratch">
+Pick a ready-made audience to pre-fill the builder, or choose **Start from scratch** for a blank cohort. Templates are grouped by goal:
+
+| Category | Templates |
+| --- | --- |
+| Engagement | Power users · Currently online · Recent purchasers |
+| Lifecycle | Churn risk · Dormant users |
+| Monetization | Enterprise accounts · Free power users |
+| Environment | Mobile users · Safari users |
+</Step>
+
+<Step title="Name it and choose membership">
+Give the cohort a clear **Name** and an optional **Description** ("What is this segment, and how should the team use it?"). Then choose **Auto-updated** or **Manual**.
+</Step>
+
+<Step title="Add rules (auto-updated cohorts)">
+Click **Add rule** and pick a field, operator, and value. Every rule you add narrows the audience — members must match all of them. As you edit, a **live preview** shows exactly how many users match right now, with sample avatars of who they are.
+</Step>
+
+<Step title="Create">
+Click **Create cohort**. An auto-updated cohort is populated immediately from its rules; a manual cohort starts empty, ready for you to add members.
+</Step>
+</Steps>
+
+<Check>
+The live preview count is always real — it runs your rules against your actual users. If it reads **0 users match right now**, loosen a rule before creating.
+</Check>
+
+## Build a manual cohort
+
+Choose **Manual** membership when you want a fixed, hand-curated list rather than a rule-driven one. Create the cohort first, then add members from anywhere you see a user:
+
+- On the **Users** page, open any user's `⋯` menu and choose **Add to cohort**.
+- In a user's detail panel, use **Add to cohort** and toggle the cohorts they belong to.
+
+<Warning>
+Only **manual** cohorts accept hand-added members. An auto-updated cohort recomputes from its rules, so a manually added user would be dropped on the next refresh — that's why the picker only lists manual cohorts.
+</Warning>
+
+## Use a cohort across Replayfy
+
+A cohort is a saved segment, so you reach for it wherever you work with users.
+
+<Steps>
+<Step title="View the members">
+From the cohort's row (or its `⋯` menu), choose **View members**. This opens the **Users** list scoped to that cohort — a banner names the cohort so you always know what you're looking at.
+</Step>
+
+<Step title="Watch their sessions">
+From the scoped user list, open any member to see their profile and jump straight into their **session replays** — so "show me what churn-risk users are actually doing" is two clicks away.
+</Step>
+
+<Step title="Combine with other filters">
+The scoped Users list still honours your other filters — country, platform, online status, last-seen window — so you can drill from a broad cohort down to an exact slice without leaving the page.
+</Step>
+</Steps>
+
+The **Cohorts** page itself gives you an at-a-glance read of every segment: member count, whether it's **Auto-updated** or **Manual**, and when it was **last computed**. Top-of-page stats sum your active cohorts and total members.
+
+## Create a cohort from a funnel drop-off
+
+One of the most useful cohorts is "everyone who abandoned here". You can build it directly from a [funnel](/products/funnels): open a step where users dropped off and choose **Create cohort from drop-off**.
+
+Replayfy first shows you how many **identified** users reached the previous step but not this one, then materializes them as a **manual** cohort — a point-in-time snapshot of that exact group.
+
+<Note>
+A drop-off cohort is a snapshot: it captures who dropped in the analyzed window and won't change as new users drop off later. It includes only identified users (anonymous visitors can't be added to a cohort), so its size can differ from the session-level drop-off shown on the funnel.
+</Note>
+
+## Cohorts created by Replayfy AI
+
+You don't have to open the builder at all. Ask [Replayfy AI](/platform/replayfy-ai) to assemble a segment for you — for example, *"create a cohort of Pro users who fired `payment_success` in the last 7 days"* — and it builds the rules and saves the cohort.
+
+Anything the assistant creates carries a **Created with Replayfy AI** badge, both in the Cohorts list and in the scope banner when you view its members, so it's always clear which segments were AI-authored. From there they behave exactly like any other cohort — you can edit, recompute, or delete them.
+
+## Manage and clean up
+
+| Action | Where | What it does |
+| --- | --- | --- |
+| **Recompute** | Cohort `⋯` menu | Forces an immediate refresh of an auto-updated cohort's membership. |
+| **View members** | Row click or `⋯` menu | Opens the Users list scoped to the cohort. |
+| **Search & filter** | Cohorts page | Filter by **Auto-updated** / **Manual**, or search cohorts by name. |
+| **Delete** | Cohort `⋯` menu | Permanently removes the cohort and its membership. This can't be undone. |
+
+<CardGroup cols={3}>
+<Card title="Funnels" icon="filter" href="/products/funnels">
+Find where users drop off — then turn any step into a cohort.
+</Card>
+<Card title="Track events" icon="code" href="/guides/track-events">
+Send the custom events that power behavioral cohorts.
+</Card>
+<Card title="Replayfy AI" icon="wand-magic-sparkles" href="/platform/replayfy-ai">
+Ask the assistant to build a cohort for you in plain English.
+</Card>
+</CardGroup>

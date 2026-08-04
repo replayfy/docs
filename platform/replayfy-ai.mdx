@@ -1,0 +1,254 @@
+---
+title: "Replayfy AI"
+description: "Ask questions about your product in plain language and get grounded answers — plus proactive insights that surface what's worth watching before you ask."
+---
+
+Replayfy AI is a built-in analyst that lives inside your dashboard. Ask it a
+question in plain language and it plans an investigation, reads your real
+session and analytics data, and answers with the evidence to back it up. It can
+also take work off your plate — build a Funnel or Cohort, watch an issue, or
+draft an alert — and it proactively surfaces what changed on your Overview
+before you think to ask.
+
+Every answer is grounded in your **structured session data** — events,
+funnels, releases, crashes, journeys — never in a black box, and never guessed
+from raw video. When an answer depends on a time range, Replayfy AI tells you
+which window it used.
+
+<Info>
+  Replayfy AI uses **leading language models** under the hood to plan and
+  narrate. The reasoning is grounded in your workspace's own data — the model
+  never sees another customer's sessions, and it only reports numbers it
+  actually pulled.
+</Info>
+
+## Where to find it
+
+Replayfy AI is reachable from every page of the dashboard at
+[app.replayfy.app](https://app.replayfy.app):
+
+- **The Ask AI panel** — a floating <Icon icon="sparkles" /> **Ask AI** button
+  in the bottom-right corner. Click it and a chat panel springs open. It stays
+  with you as you move between Recordings, Funnels, Users, and Settings, so you
+  can ask about whatever you're looking at.
+- **The Ask bar on the Overview** — a command box at the top of your
+  [Overview](/products/overview) with rotating example questions. Start typing
+  and press <kbd>⏎</kbd> to ask.
+- **"Investigate" actions** — buttons scattered through the product (on a
+  signal, a crash, a drop-off) open the panel pre-loaded with the right
+  question.
+
+## How to ask
+
+<Steps>
+  <Step title="Open Ask AI">
+    Click the <Icon icon="sparkles" /> **Ask AI** button in the bottom-right of
+    any page, or use the Ask bar at the top of your Overview.
+  </Step>
+  <Step title="Ask in plain language">
+    Type a real question — no query syntax, no filters to configure. Press
+    <kbd>⏎</kbd> to send. You can pick one of the suggested prompts to start.
+  </Step>
+  <Step title="Watch it investigate">
+    Replayfy AI shows its plan and streams each step as it runs —
+    _"Investigating conversion…"_, _"Reading release 1.6.2…"_ — then writes the
+    answer token by token. Expand the **thinking** row to see exactly which
+    sources it read.
+  </Step>
+  <Step title="Follow the evidence">
+    Answers come with citation chips. Click a session chip to jump straight into
+    that recording, or a funnel chip to open the funnel. Use the suggested
+    follow-up buttons to keep digging.
+  </Step>
+</Steps>
+
+<Tip>
+  Good questions are specific and outcome-shaped. Try **"Why did checkout
+  conversion drop this week?"**, **"What's hurting stability right now?"**,
+  **"Compare iOS vs Android retention"**, or **"Which cohort recovered
+  fastest?"**
+</Tip>
+
+## Grounded answers, not guesses
+
+Replayfy AI is deliberately honest about what it knows:
+
+| What you see | What it means |
+| --- | --- |
+| **The time window** | When an answer depends on a range, the reply states it — _"in the last 7 days"_, _"across the 1.6.2 release"_ — so you never mistake a narrow window for the whole picture. |
+| **Citations** | Evidence chips link to the exact sessions, funnels, console lines, or crashes the answer rests on. |
+| **Confidence** | Answers can carry a high / medium / low confidence flag when the underlying sample is thin. |
+| **Honest empty states** | "No one reached this step" and "there's no data in this window" are reported as different things — the AI won't invent a number to fill a gap. |
+
+<Note>
+  Answers are grounded in your **structured** product data — tracked events,
+  funnel steps, releases, crash groups, journeys and session metadata — not in
+  the pixels of a replay. The richer your event tracking, the sharper the
+  answers. See [Track events](/guides/track-events).
+</Note>
+
+## Actions it can take for you
+
+Beyond answering, Replayfy AI can do the work. Ask it to build something and it
+assembles the definition, shows you a preview, and creates it — stamped
+**"Created with Replayfy AI"** so your team can see where it came from.
+
+<CardGroup cols={2}>
+  <Card title="Build a Funnel" icon="filter">
+    "Build a funnel from Landing → Signup → Purchase" — it defines the steps and
+    creates the funnel for you.
+  </Card>
+  <Card title="Create a Cohort" icon="users">
+    "Make a cohort of users who rage-tapped checkout on Android" — it translates
+    the description into a real, saved cohort.
+  </Card>
+  <Card title="Watch an issue" icon="bell">
+    "Alert me if crash-free rate drops below 99%" — it drafts the alert and can
+    watch a specific issue for recurrence.
+  </Card>
+  <Card title="File it out" icon="plug">
+    With an integration connected, it can draft a Linear or GitHub issue, or a
+    Slack message, from what it found.
+  </Card>
+</CardGroup>
+
+### The confirmation gate
+
+Anything that writes outside Replayfy — filing an issue, posting to a channel —
+**pauses for your approval first**. Replayfy AI shows you the full outgoing
+payload (the issue body, the exact Slack fields) and nothing is sent until you
+click **Confirm**.
+
+<Warning>
+  Read-only questions run freely. Actions that create, update, delete, or send
+  are previewed and require an explicit **Confirm** — Replayfy AI never writes
+  or sends on your behalf without it.
+</Warning>
+
+### It learns your workspace
+
+When a question is ambiguous — _"which checkout event do you mean?"_ — Replayfy
+AI asks, and remembers your answer so it never has to ask again. Admins can
+review, correct, or forget everything the AI has learned about the workspace,
+and every action it takes is written to an **audit trail** you can inspect.
+
+## Proactive intelligence on the Overview
+
+You don't have to ask first. When AI is on, your [Overview](/products/overview)
+leads with insights the AI generated by reading the same data you'd query:
+
+<AccordionGroup>
+  <Accordion title="Storyline" icon="sparkles">
+    An analyst-written lead at the top of the Overview — the single most
+    important thing happening in your product right now, in prose, with a
+    confidence chip and the supporting evidence. It's regenerated as your data
+    moves, never templated.
+  </Accordion>
+  <Accordion title="Signals" icon="chart-line">
+    The ledger of what moved — conversion, stability, engagement and segment
+    shifts, ranked by impact. With AI on, each signal gains a short analyst read
+    on top of the raw numbers.
+  </Accordion>
+  <Accordion title="Worth watching & experience health" icon="shield-halved">
+    A rolled-up health read of the current window and a short watchlist of the
+    things most likely to need your attention next — surfaced before they become
+    incidents.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Prefer a purely deterministic dashboard? Toggle Replayfy AI **off** for the
+  workspace and the Overview falls back to threshold-based cards with no
+  generated narrative. The switch is instant and reversible.
+</Tip>
+
+## AI credits & metering
+
+Replayfy AI runs on **credits**. Every request — an Ask turn, a Storyline
+refresh, a set of Signals — consumes credits in proportion to the work it did.
+Credits are generous, round numbers rather than fractions of a cent:
+
+- **≈ 100,000 credits = $1.** Every request is metered against this rate.
+- **A monthly allowance is bundled with your plan** — from a taster on Free up
+  to millions of credits on higher tiers — sized so normal usage stays inside
+  it.
+- **Optional top-ups.** If you run through the monthly allowance, buy more with
+  a one-time **Buy credits** purchase; they stack on top of your bundled
+  allowance.
+
+You can see exactly where credits went. **Settings → Billing** shows credits
+**used vs. included**, credits **remaining**, and a per-surface breakdown — how
+much Ask consumed versus the proactive insights — plus a receipt for every
+top-up.
+
+<Note>
+  When a workspace runs out of credits, Replayfy AI pauses rather than billing
+  you by surprise — it resumes when the allowance resets or you top up. Full
+  plan allowances and pricing live in
+  [Workspaces & billing](/platform/workspaces-and-billing).
+</Note>
+
+## Who can use it
+
+| Role | Ask questions | Take actions | Manage learned knowledge |
+| --- | --- | --- | --- |
+| Owner / Admin | Yes | Yes (with confirm) | Yes |
+| Member | Yes | Yes (with confirm) | — |
+| Viewer | — | — | — |
+
+Viewers are invited to watch recordings, so the Ask panel isn't offered to them.
+
+## What feeds better answers
+
+Replayfy AI reasons over whatever your SDK sends. The more you identify users
+and track meaningful events, the more precise your answers about conversion,
+segments, and journeys become.
+
+<CodeGroup>
+```ts npm
+import { initReplay } from "@replayfyapp/browser";
+
+const replay = initReplay({
+  apiKey: "rpl_pk_YOUR_KEY",         // publishable — safe to ship
+  apiHost: "https://us.replayfy.app",
+});
+
+// Tie sessions to a real user so the AI can reason about cohorts & retention
+replay.identify("user_123", { plan: "pro" });
+
+// Track the moments that matter so questions about them have data
+replay.track("checkout_started", { cartValue: 84.0 });
+```
+
+```html CDN
+<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+<script>
+  Replayfy.init({
+    apiKey: "rpl_pk_YOUR_KEY",
+    apiHost: "https://us.replayfy.app",
+  });
+  Replayfy.identify("user_123", { plan: "pro" });
+  Replayfy.track("checkout_started", { cartValue: 84.0 });
+</script>
+```
+</CodeGroup>
+
+<Check>
+  Once events flow in, ask **"How is checkout_started converting this week?"** —
+  the AI will pull the numbers, state the window, and cite the sessions behind
+  them.
+</Check>
+
+## Related
+
+<CardGroup cols={3}>
+  <Card title="Product analytics" icon="chart-line" href="/products/product-analytics">
+    Where Storyline, Signals, and the health read live.
+  </Card>
+  <Card title="Track events" icon="code" href="/guides/track-events">
+    Send the events that make AI answers precise.
+  </Card>
+  <Card title="Workspaces & billing" icon="credit-card" href="/platform/workspaces-and-billing">
+    Plan allowances, credits, and top-ups.
+  </Card>
+</CardGroup>
