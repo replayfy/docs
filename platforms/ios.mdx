@@ -1,0 +1,292 @@
+---
+title: "iOS SDK"
+description: "Session replay, product analytics, and error monitoring for your iOS app."
+---
+
+Record pixel-accurate replays, auto-captured taps and gestures, custom events, crashes, and performance vitals — with one call at launch. Requires iOS 15+.
+
+## Install
+
+The module you import is always `Replay`, regardless of installer.
+
+<CodeGroup>
+
+```swift Swift Package Manager
+// File → Add Package Dependencies…
+// https://github.com/replayfy/ios-sdk  (from 0.0.3)
+
+dependencies: [
+    .package(url: "https://github.com/replayfy/ios-sdk.git", from: "0.0.3")
+],
+targets: [
+    .target(
+        name: "YourApp",
+        dependencies: [
+            .product(name: "Replayfy", package: "replay-ios-sdk"),
+            // optional SwiftUI modifiers:
+            .product(name: "ReplaySwiftUI", package: "replay-ios-sdk"),
+        ]
+    )
+]
+```
+
+```ruby CocoaPods
+pod 'Replayfy', '~> 0.0.3'
+```
+
+</CodeGroup>
+
+## Initialize
+
+<Steps>
+  <Step title="Import and start at launch">
+    Start Replayfy as early as possible — recording begins immediately.
+
+    ```swift
+    import Replay
+
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions:
+                     [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        Replay.start(with: ReplayConfig(
+            apiKey: "rpl_pk_YOUR_KEY",
+            apiHost: "https://us.replayfy.app"
+        ))
+        return true
+    }
+    ```
+  </Step>
+
+  <Step title="SwiftUI-only apps">
+    No `AppDelegate`? Start it from `App.init`.
+
+    ```swift
+    @main
+    struct MyApp: App {
+        init() {
+            Replay.start(with: ReplayConfig(
+                apiKey: "rpl_pk_YOUR_KEY",
+                apiHost: "https://us.replayfy.app"
+            ))
+        }
+        var body: some Scene { WindowGroup { ContentView() } }
+    }
+    ```
+  </Step>
+
+  <Step title="Identify and track (optional)">
+    Attach a known user and record custom events.
+
+    ```swift
+    Replay.identify("user_123", properties: ["email": "a@b.com", "plan": "pro"])
+    Replay.track("purchase", properties: ["amount": 4200, "currency": "USD"])
+    ```
+  </Step>
+</Steps>
+
+## Verify
+
+<Check>
+  Run the app, interact for a few seconds, then background it. Your first session appears in the [Replayfy dashboard](https://replayfy.app) within a minute.
+</Check>
+
+<Note>
+  Wire up `Replay.addVerificationListener { ... }` to light up an in-app "Verify integration" state — it fires once after the first successful upload.
+</Note>
+
+## Configuration
+
+Only `apiKey` and `apiHost` are required. Pass any subset to `ReplayConfig(...)`.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `apiKey` | `String` | **required** | Your project API key from the dashboard. |
+| `apiHost` | `String` | **required** | Ingest base URL, e.g. `https://us.replayfy.app`. |
+| `projectId` | `String?` | `nil` | Only when one key covers multiple projects. |
+| `distinctId` | `String?` | `nil` | Known user id at start; otherwise an install-stable anonymous id is used. |
+| `flushInterval` | `TimeInterval` | `5` | Seconds between automatic uploads of the in-memory batch. |
+| `maxBufferSize` | `Int` | `500` | Events buffered before an upload is forced. |
+| `captureConsole` | `Bool` | `true` | Capture `print` / `NSLog` / `os_log` output. |
+| `captureNetwork` | `Bool` | `false` | Capture HTTP requests (off by default to avoid PII). |
+| `captureErrors` | `Bool` | `true` | Capture uncaught exceptions and crashes. |
+| `captureHeaders` | `Bool` | `false` | Include request/response headers in network capture. |
+| `captureBodies` | `Bool` | `true` | Include request/response bodies (capped by `maxBodyBytes`). |
+| `maxBodyBytes` | `Int` | `4096` | Max captured body bytes per network event; larger bodies are truncated. |
+| `captureSnapshotPixels` | `Bool` | `true` | Pixel-accurate replay when `true`; lighter wireframe replay when `false`. |
+| `snapshotInterval` | `TimeInterval` | `0.5` | Screen-capture cadence in seconds (floored at 0.2s). |
+| `autoScreenName` | `Bool` | `true` | Auto-detect the current screen from the foreground view controller. |
+| `useRemoteConfig` | `Bool` | `true` | Let dashboard settings override these values at runtime. |
+| `captureTouch` | `Bool` | `true` | Capture taps natively (disable only for host-driven capture such as Flutter). |
+
+## API reference
+
+All methods are static on the `Replay` type.
+
+### Lifecycle
+
+| Method | Description |
+|---|---|
+| `Replay.start(with: ReplayConfig)` | Boot the SDK and start recording. Call once at launch. |
+| `Replay.stop()` | End the current session and upload immediately; a new session starts on next foreground. |
+| `Replay.isRecording` | `Bool` — whether a session is currently recording. |
+| `Replay.pauseRecording()` | Pause screen capture (other events keep flowing). |
+| `Replay.resumeRecording()` | Resume screen capture. |
+| `Replay.startNewSession()` | Force a new logical session (e.g. after logout → login). |
+| `Replay.stopApplicationAndUploadData(timeoutSeconds:)` | Stop recording and block up to `timeoutSeconds` until the buffer flushes. |
+
+### Identify & analytics
+
+| Method | Description |
+|---|---|
+| `Replay.identify(_:properties:)` | Attach a known user to the session; anonymous history links back to them. |
+| `Replay.track(_:properties:)` | Fire a custom event onto the timeline (drives funnels and filters). |
+| `Replay.setUserProperty(_:value:)` | Sticky property on the end user (persists across sessions). |
+| `Replay.setSessionProperty(_:value:)` | Sticky property on the current session only. |
+| `Replay.addTagWithProperties(_:properties:)` | Session-level tag (with optional properties) for filtering sessions. |
+| `Replay.markSessionAsFavorite()` | Star the current session so it surfaces in the dashboard's saved filter. |
+| `Replay.reportBugEvent(_:description:)` | Send a manual bug report (wire to a "Report issue" button). |
+
+### Error monitoring
+
+| Method | Description |
+|---|---|
+| `Replay.captureException(_:properties:)` | Report a caught error onto the timeline (`handled = true` by default). |
+| `Replay.captureException(_:handled:)` | Report a caught error; pass `handled: false` to mark it fatal. |
+
+Uncaught exceptions and crashes are captured automatically when `captureErrors` is `true`.
+
+### Screens
+
+| Method | Description |
+|---|---|
+| `Replay.tagScreenName(_:)` | Manually set the current screen name (overrides the auto-tagger). |
+| `Replay.setAutomaticScreenNameTagging(_:)` | Toggle the automatic screen-name tagger at runtime. |
+
+### Logging
+
+| Method | Description |
+|---|---|
+| `Replay.log(level:message:stack:)` | Bridge a custom logger into the console tab. `level` ∈ `"log"`, `"info"`, `"warn"`, `"error"`, `"debug"`. |
+
+### Metadata
+
+| Method | Description |
+|---|---|
+| `Replay.setAppVersion(_:build:)` | Override the auto-detected app version/build (useful for RN/Flutter shells). |
+| `Replay.setPushNotificationToken(_:platform:)` | Attach the device push token to the session. |
+
+### Text input
+
+| Method | Description |
+|---|---|
+| `Replay.addObservedInput(_:)` | Record a text field's value when editing ends (opt-in per field). Secure fields record as `"***"`. |
+| `Replay.trackInput(label:value:masked:)` | Report a value not backed by a `UITextField`. `masked` → `"***"`. |
+
+### Network capture
+
+Set `captureNetwork: true`. `URLSession.shared` is captured automatically. For a custom configuration, register it before creating the session.
+
+| Method | Description |
+|---|---|
+| `Replay.captureURLSessionConfiguration(_:)` | Register a custom `URLSessionConfiguration` for capture. |
+
+```swift
+let cfg = URLSessionConfiguration.default
+Replay.captureURLSessionConfiguration(cfg)
+let session = URLSession(configuration: cfg)
+```
+
+### Consent / opt-out
+
+| Method | Description |
+|---|---|
+| `Replay.optOutOverall(_:)` | Overall opt-out — drops all events and recording. Persists across launches. |
+| `Replay.isOptedOutOverall` | `Bool` — whether the user is currently opted out. |
+
+### Integration verification
+
+| Method | Description |
+|---|---|
+| `Replay.addVerificationListener(_:)` | Fires once after the first successful upload. Returns a token to remove it later. |
+| `Replay.removeVerificationListener(_:)` | Remove a previously added verification listener by token. |
+
+### Cross-platform bridges
+
+Entry points for host frameworks (React Native, Flutter) that capture interactions, inputs, and frames themselves. Native iOS apps don't need them.
+
+| Method | Description |
+|---|---|
+| `Replay.reportInteraction(kind:label:x:y:)` | Feed a host-captured interaction (tap, gesture) into the timeline. |
+| `Replay.reportFrame(_:rects:styles:)` | Feed a host-captured frame with occlusion rects and styles. |
+
+<Warning>
+  A few methods are on the public surface but are no-ops in this release, pending an engine follow-up: `cancelSession()`, `optOutOfSchematicRecordings(_:)` / `isOptedOutOfSchematicRecordings`, `urlForCurrentSession()` / `urlForCurrentUser()`, `enableAdvancedGestureRecognizer(_:)`, `allowShortBreakForAnotherApp(_:windowSeconds:)`, and `setMultiSessionRecord(_:)`. Calling them is safe but has no effect.
+</Warning>
+
+## Privacy & masking
+
+Sensitive content never has to leave the device. Secure/password fields (`isSecureTextEntry`) are masked automatically; everything else is opt-in.
+
+### Choose a mask style
+
+```swift
+Replay.setMaskStyle(.blur)      // Gaussian blur (default)
+Replay.setMaskStyle(.overlay)   // solid box — nothing survives
+Replay.setMaskStyle(.pixelate)  // coarse mosaic
+Replay.setBlurRadius(8)         // blur strength for .blur regions
+```
+
+`ReplayMaskStyle` values: `.blur`, `.overlay`, `.pixelate`.
+
+### UIKit masking
+
+```swift
+// Mask a single view (marks propagate to subviews).
+Replay.addPrivacyView(cardNumberField)
+Replay.removePrivacyView(cardNumberField)
+
+// Mask every text field / text view, or every label.
+Replay.occludeAllTextFields(true)
+Replay.occludeAllTextView(true)
+
+// Mask every instance of a view class, everywhere it appears.
+Replay.applyOcclusion(CreditCardView.self)
+Replay.removeOcclusion(CreditCardView.self)
+
+// Mask the entire screen (banking PIN pad, health records, …).
+Replay.occludeSensitiveScreen(true)
+
+// Mask specific regions on the next frame only (root-relative points).
+Replay.occludeRectsOnNextFrame(rects)
+Replay.occludeRectsOnNextFrame(rects, style: .overlay)
+```
+
+### SwiftUI masking
+
+Import the optional `ReplaySwiftUI` module:
+
+```swift
+import ReplaySwiftUI
+
+var body: some View {
+    VStack {
+        CreditCardForm()
+            .replayOcclude()                 // mask this view's region
+    }
+    .replayTagScreenName("Checkout")         // tag the screen on appear
+}
+```
+
+`replayOcclude(blockGestures:)` also suppresses taps on the masked region when `blockGestures` is `true` (the default).
+
+<CardGroup cols={2}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users">
+    Link sessions to known users and their properties.
+  </Card>
+  <Card title="Track events" icon="chart-line" href="/guides/track-events">
+    Fire custom events to power funnels and filters.
+  </Card>
+  <Card title="Privacy & masking" icon="shield" href="/guides/privacy-and-masking">
+    Redact sensitive views, fields, and regions.
+  </Card>
+</CardGroup>

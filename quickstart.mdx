@@ -1,0 +1,166 @@
+---
+title: "Quickstart"
+description: "Get Replayfy recording real sessions in under two minutes. Pick your platform, paste two snippets, reload."
+---
+
+Recording takes three steps on every platform: **install**, **initialize**, **verify**.
+
+<Note>
+  Grab your **project key** from the dashboard: **app.replayfy.app → Settings → API keys**.
+  It looks like `rpl_pk_…` and is safe to ship in your app — it's a *publishable*
+  key, not a secret. Replace `rpl_pk_YOUR_KEY` below with yours.
+</Note>
+
+<Tabs>
+  <Tab title="Web">
+    <Steps>
+      <Step title="Install">
+        <CodeGroup>
+        ```bash npm
+        npm install @replayfyapp/browser
+        ```
+        ```html Script tag
+        <script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+        ```
+        </CodeGroup>
+      </Step>
+      <Step title="Initialize">
+        ```ts
+        import { initReplay } from "@replayfyapp/browser";
+
+        initReplay({
+          apiKey: "rpl_pk_YOUR_KEY",
+          apiHost: "https://us.replayfy.app",
+        });
+        ```
+        Using the script tag instead? Call `Replayfy.init({ apiKey, apiHost })`.
+      </Step>
+      <Step title="Verify">
+        <Check>Reload your site, click around, then open **Recordings** in the dashboard — your session appears within seconds.</Check>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="iOS">
+    <Steps>
+      <Step title="Install">
+        <CodeGroup>
+        ```ruby CocoaPods
+        pod 'Replayfy', '~> 0.0.3'
+        ```
+        ```swift Swift Package Manager
+        // File → Add Packages… → https://github.com/replayfy/ios-sdk  (from: 0.0.3)
+        ```
+        </CodeGroup>
+      </Step>
+      <Step title="Initialize">
+        Start recording from your `App` / `AppDelegate`:
+        ```swift
+        import Replay
+
+        Replay.start(with: ReplayConfig(
+            apiKey: "rpl_pk_YOUR_KEY",
+            apiHost: "https://us.replayfy.app"
+        ))
+        ```
+      </Step>
+      <Step title="Verify">
+        <Check>Run the app, tap around, then open **Recordings** in the dashboard.</Check>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Android">
+    <Steps>
+      <Step title="Install">
+        Add JitPack to `settings.gradle.kts`, then the dependency:
+        ```kotlin
+        // settings.gradle.kts → dependencyResolutionManagement { repositories { … } }
+        maven { url = uri("https://jitpack.io") }
+
+        // app/build.gradle.kts
+        implementation("com.github.replayfy:android-sdk:0.0.3")
+        ```
+      </Step>
+      <Step title="Initialize">
+        Start recording from `Application.onCreate`:
+        ```kotlin
+        import com.replayfy.android.Replay
+        import com.replayfy.android.ReplayConfig
+
+        Replay.init(
+            this,
+            ReplayConfig(
+                apiKey = "rpl_pk_YOUR_KEY",
+                apiHost = "https://us.replayfy.app",
+            ),
+        )
+        ```
+      </Step>
+      <Step title="Verify">
+        <Check>Launch the app, tap around, then open **Recordings** in the dashboard.</Check>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="React Native">
+    <Steps>
+      <Step title="Install">
+        ```bash
+        npm install @replayfyapp/react-native
+        cd ios && pod install && cd ..
+        ```
+      </Step>
+      <Step title="Initialize">
+        Call once, as early as possible (e.g. `App.tsx`):
+        ```tsx
+        import Replay from '@replayfyapp/react-native';
+
+        Replay.start({
+          projectKey: 'rpl_pk_YOUR_KEY',
+          ingestUrl: 'https://us.replayfy.app',
+        });
+        ```
+      </Step>
+      <Step title="Verify">
+        <Check>Rebuild the app, tap around, then open **Recordings** in the dashboard.</Check>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Flutter">
+    <Steps>
+      <Step title="Install">
+        ```bash
+        flutter pub add replayfy_flutter
+        ```
+      </Step>
+      <Step title="Initialize">
+        Start recording in `main`, before `runApp`:
+        ```dart
+        import 'package:replayfy_flutter/replayfy_flutter.dart';
+
+        await Replay.start(const ReplayConfig(
+          projectKey: 'rpl_pk_YOUR_KEY',
+          ingestUrl: 'https://us.replayfy.app',
+        ));
+        ```
+      </Step>
+      <Step title="Verify">
+        <Check>Run the app, tap around, then open **Recordings** in the dashboard.</Check>
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## That's it
+
+You're recording. Next, make the data yours:
+
+<CardGroup cols={3}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users" />
+  <Card title="Track events" icon="bolt" href="/guides/track-events" />
+  <Card title="Privacy & masking" icon="shield-halved" href="/guides/privacy-and-masking" />
+</CardGroup>
+
+Need the full API and config for your platform? See the per-SDK pages under **SDKs**.

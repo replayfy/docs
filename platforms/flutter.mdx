@@ -1,0 +1,222 @@
+---
+title: "Flutter SDK"
+description: "Session replay, product analytics, and error monitoring for your Flutter apps — iOS and Android."
+---
+
+Replayfy records every screen, tap, network request, and error in your Flutter app so you can replay real sessions, understand drop-off, and fix bugs from an exact reproduction.
+
+## Install
+
+<CodeGroup>
+
+```bash CLI
+flutter pub add replayfy_flutter
+```
+
+```yaml pubspec.yaml
+dependencies:
+  replayfy_flutter: ^0.0.4
+```
+
+</CodeGroup>
+
+<Note>
+  **Android** — the native recording engine is distributed through JitPack. Add its repository to your app's `android/settings.gradle` so Gradle can resolve the transitive native SDK.
+
+  ```gradle android/settings.gradle
+  dependencyResolutionManagement {
+    repositories {
+      google()
+      mavenCentral()
+      maven { url 'https://jitpack.io' }
+    }
+  }
+  ```
+
+  **iOS** — requires a deployment target of **iOS 15** or higher.
+</Note>
+
+## Initialize
+
+<Steps>
+
+<Step title="Start Replayfy as early as possible">
+  Boot the SDK inside `Replay.runZoned` so console output and uncaught async errors are captured too.
+
+  ```dart main.dart
+  import 'package:flutter/widgets.dart';
+  import 'package:replayfy_flutter/replayfy_flutter.dart';
+
+  void main() => Replay.runZoned(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    await Replay.start(const ReplayConfig(
+      projectKey: 'rpl_pk_YOUR_KEY',
+      ingestUrl: 'https://us.replayfy.app',
+    ));
+
+    runApp(const MyApp());
+  });
+  ```
+</Step>
+
+<Step title="Wire up frame capture and screen tagging">
+  Use the provided app builder so Replayfy can capture each frame, and add the navigator observer to auto-tag screens.
+
+  ```dart
+  MaterialApp(
+    builder: Replay.appBuilder,
+    navigatorObservers: [ReplayNavigatorObserver()], // auto-tags screens
+    home: const HomePage(),
+  );
+  ```
+</Step>
+
+</Steps>
+
+## Verify
+
+<Check>
+  Run the app, interact with it for a few seconds, then reload. Your first session appears in the [dashboard](https://us.replayfy.app) within a minute.
+</Check>
+
+## Configuration
+
+Every option on `ReplayConfig`:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `projectKey` | `String` | — (required) | Your project API key from the dashboard. |
+| `ingestUrl` | `String` | — (required) | Your Replayfy ingest host, e.g. `https://us.replayfy.app`. |
+| `distinctId` | `String?` | `null` | Known user id at start; otherwise an install-stable anonymous id is used. |
+| `recordScreen` | `bool` | `true` | Capture screen frames for replay. |
+| `recordNetwork` | `bool` | `true` | Capture network requests and responses. |
+| `recordConsole` | `bool` | `true` | Capture console output (`print` / `debugPrint`). Requires `Replay.runZoned`. |
+| `recordErrors` | `bool` | `true` | Capture unhandled errors and crashes. |
+| `recordPerformance` | `bool` | `true` | Capture performance vitals (cold start, frame drops, memory, thermal, battery). |
+| `maskAllInputs` | `bool` | `false` | Automatically mask every text input. |
+| `autoScreenName` | `bool` | `true` | Automatically tag screens from the navigator. |
+| `useRemoteConfig` | `bool` | `true` | Let the dashboard override capture settings remotely. |
+| `debug` | `bool` | `false` | Verbose SDK logging. |
+
+## API reference
+
+All methods are static on `Replay`. Most return `Future<void>`.
+
+### Lifecycle
+
+| Method | Description |
+|---|---|
+| `Replay.start(ReplayConfig config)` | Boot the SDK and start recording. |
+| `Replay.stop()` | Stop and finalize the session. |
+| `Replay.pauseRecording()` | Pause capture without ending the session. |
+| `Replay.resumeRecording()` | Resume after a pause. |
+| `Replay.startNewSession()` | End the current session and begin a fresh one. |
+| `Replay.cancelSession()` | Discard the in-flight session without uploading. |
+| `Replay.isRecording()` | Returns `Future<bool>` — whether capture is active. |
+| `Replay.currentSessionId()` | Returns `Future<String?>` — the current session id. |
+| `Replay.stopApplicationAndUploadData()` | Force-upload everything immediately (e.g. right before a forced logout). |
+
+### Identity & events
+
+| Method | Description |
+|---|---|
+| `Replay.identify(String distinctId, {Map<String, Object?> properties})` | Associate the session with a known user and set user properties. |
+| `Replay.track(String event, {Map<String, Object?> properties})` | Record a custom analytics event. |
+| `Replay.captureException(Object error, {StackTrace? stackTrace, bool handled})` | Capture a handled exception (`handled: true` by default). |
+| `Replay.trackInput(String label, String value, {bool masked})` | Record a text field's value; pass `masked: true` to drop it to `"***"`. |
+
+### Screens, tags & properties
+
+| Method | Description |
+|---|---|
+| `Replay.tagScreenName(String name)` | Manually tag the current screen. |
+| `Replay.addTagWithProperties(String tag, {Map<String, Object?> properties})` | Add a tag with arbitrary properties. |
+| `Replay.setUserProperty(String key, Object? value)` | Set a property that sticks to the user. |
+| `Replay.setSessionProperty(String key, Object? value)` | Set a property scoped to this session only. |
+| `Replay.setMetadata(String key, Object? value)` | Attach metadata to the session. |
+| `Replay.markSessionAsFavorite()` | Flag the current session as a favorite. |
+| `Replay.reportBugEvent(String title, {String description})` | Log a bug report event on the timeline. |
+| `Replay.log(String message, {String level})` | Write a message into the console timeline. |
+
+### Runtime configuration
+
+| Method | Description |
+|---|---|
+| `Replay.setAutomaticScreenNameTagging(bool enabled)` | Toggle automatic screen tagging at runtime. |
+| `Replay.setMultiSessionRecord(bool enabled)` | Enable recording across multiple sessions. |
+| `Replay.allowShortBreakForAnotherApp(bool allowed)` | Keep the session alive during a brief switch to another app. |
+| `Replay.setAppVersion(String version, {String build})` | Set the app version and build number. |
+| `Replay.setPushNotificationToken(String token, {String platform})` | Register a push token (e.g. `platform: 'fcm'`). |
+
+### Deep links
+
+| Method | Description |
+|---|---|
+| `Replay.urlForCurrentSession()` | Returns `Future<String?>` — a dashboard link to the current session. |
+| `Replay.urlForCurrentUser()` | Returns `Future<String?>` — a dashboard link to the current user. |
+
+### Privacy
+
+| Method | Description |
+|---|---|
+| `Replay.setMaskStyle(ReplayMaskStyle style)` | Set the global mask style for bulk and whole-screen regions. |
+| `Replay.occludeAllTextFields(bool enabled)` | Mask all single-line text fields. |
+| `Replay.occludeAllTextView(bool enabled)` | Mask all multi-line text views. |
+| `Replay.occludeSensitiveScreen(bool enabled)` | Mask the entire current screen. |
+| `Replay.optOut(bool optedOut)` | Persistent kill switch — stop all recording. |
+| `Replay.optIn()` | Resume recording (same as `optOut(false)`). |
+| `Replay.isOptedOut()` | Returns `Future<bool>` — the current opt-out state. |
+
+## Privacy & masking
+
+Replayfy is built to keep sensitive data off the wire.
+
+**Mask a widget** — wrap anything sensitive; it is blurred (default), covered, or pixelated in the recording:
+
+```dart
+ReplayMask(
+  maskStyle: ReplayMaskStyle.blur, // .blur | .overlay | .pixelate
+  child: Text('•••• •••• •••• 4242'),
+);
+```
+
+**Mask a text input's value** from its callback — the value is dropped to `"***"` and never leaves the device:
+
+```dart
+TextField(
+  obscureText: true,
+  onSubmitted: (v) => Replay.trackInput('Password', v, masked: true),
+);
+```
+
+**Bulk & whole-screen masking:**
+
+```dart
+await Replay.setMaskStyle(ReplayMaskStyle.pixelate);
+await Replay.occludeAllTextFields(true);   // all single-line text fields
+await Replay.occludeAllTextView(true);     // all multi-line text views
+await Replay.occludeSensitiveScreen(true); // the entire screen
+```
+
+Or mask every input from the start with `maskAllInputs: true` in `ReplayConfig`.
+
+**GDPR opt-out** — a persistent kill switch that survives relaunches:
+
+```dart
+await Replay.optOut(true);            // stop all recording
+await Replay.optIn();                 // resume
+final out = await Replay.isOptedOut(); // bool
+```
+
+<CardGroup cols={2}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users">
+    Tie sessions to real users with `identify`.
+  </Card>
+  <Card title="Track events" icon="chart-line" href="/guides/track-events">
+    Send custom events and build funnels.
+  </Card>
+  <Card title="Privacy & masking" icon="shield" href="/guides/privacy-and-masking">
+    Redact sensitive data before it leaves the device.
+  </Card>
+</CardGroup>

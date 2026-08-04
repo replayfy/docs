@@ -1,0 +1,38 @@
+---
+title: "Track events"
+description: "Fire custom events to power funnels, retention, and session search."
+---
+
+Track the moments that matter — signups, purchases, feature usage. Events drive
+funnels and let you jump straight to the sessions where they happened. Use stable,
+lowercase names (`checkout_started`, `purchase`) so they stay searchable.
+
+<Tabs>
+  <Tab title="Web">
+    ```ts
+    replay.track("purchase", { amount: 4200, currency: "USD" });
+    ```
+  </Tab>
+  <Tab title="iOS">
+    ```swift
+    Replay.track("purchase", properties: ["amount": 4200, "currency": "USD"])
+    ```
+  </Tab>
+  <Tab title="Android">
+    ```kotlin
+    Replay.track("purchase", mapOf("amount" to 4200, "currency" to "USD"))
+    ```
+  </Tab>
+  <Tab title="React Native">
+    ```tsx
+    Replay.track("purchase", { amount: 4200, currency: "USD" });
+    ```
+  </Tab>
+  <Tab title="Flutter">
+    ```dart
+    Replay.track("purchase", properties: {"amount": 4200, "currency": "USD"});
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>Keep property keys consistent across events — they become the dimensions you filter and break funnels down by.</Tip>

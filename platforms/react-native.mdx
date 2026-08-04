@@ -1,0 +1,229 @@
+---
+title: "React Native SDK"
+description: "Session replay, product analytics, and error monitoring for React Native apps."
+---
+
+Replayfy records screens, taps, gestures, network, console, and crashes on the native engines, then replays them pixel-for-pixel in your dashboard.
+
+## Install
+
+<CodeGroup>
+
+```bash npm
+npm install @replayfyapp/react-native@0.0.3
+```
+
+```bash yarn
+yarn add @replayfyapp/react-native@0.0.3
+```
+
+</CodeGroup>
+
+Install the iOS pods:
+
+```bash iOS
+cd ios && pod install
+```
+
+React Native links the native module automatically. Rebuild the app (`npx react-native run-ios` / `run-android`) so the native module is bundled.
+
+<Note>
+**Android (JitPack).** The native Android engine is distributed through JitPack. If your app uses Gradle's centralized repositories (a `dependencyResolutionManagement` block in `android/settings.gradle`), add JitPack there so the transitive native SDK resolves:
+
+```gradle android/settings.gradle
+dependencyResolutionManagement {
+  repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+  }
+}
+```
+</Note>
+
+## Initialize
+
+<Steps>
+
+<Step title="Start recording">
+Boot the SDK once, as early as possible. This is idempotent.
+
+```tsx
+import Replay from '@replayfyapp/react-native';
+
+Replay.start({
+  projectKey: 'rpl_pk_YOUR_KEY',
+  ingestUrl: 'https://us.replayfy.app',
+});
+```
+</Step>
+
+<Step title="Or boot from a provider">
+Wrap your tree to start recording on mount.
+
+```tsx
+import { ReplayProvider } from '@replayfyapp/react-native';
+
+export default function App() {
+  return (
+    <ReplayProvider
+      config={{
+        projectKey: 'rpl_pk_YOUR_KEY',
+        ingestUrl: 'https://us.replayfy.app',
+      }}
+    >
+      <RootNavigator />
+    </ReplayProvider>
+  );
+}
+```
+</Step>
+
+<Step title="Identify and track">
+Once recording, attach identity and events.
+
+```tsx
+Replay.identify('user_123', { plan: 'pro', email: 'a@b.com' });
+Replay.track('purchase', { amount: 4200, currency: 'USD' });
+Replay.screen('Checkout');
+```
+</Step>
+
+</Steps>
+
+## Verify
+
+<Check>
+Reload the app and interact for a few seconds. Your first session appears in the [Replayfy dashboard](https://us.replayfy.app) within moments.
+</Check>
+
+## Configuration
+
+Pass these to `Replay.start(config)`:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `projectKey` | `string` | **required** | Your project API key from the dashboard. |
+| `ingestUrl` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
+| `distinctId` | `string` | — | Known user id at start (otherwise an install-stable anonymous id is used). |
+| `recordScreen` | `boolean` | `true` | Capture screen frames. |
+| `recordNetwork` | `boolean` | `true` | Capture `fetch` + `XHR` traffic. |
+| `recordConsole` | `boolean` | `true` | Capture `console.*` output. |
+| `recordErrors` | `boolean` | `true` | Capture unhandled JS errors. |
+| `recordPerformance` | `boolean` | `true` | Capture performance vitals. |
+| `maskAllInputs` | `boolean` | `false` | Mask every text input in replay. |
+| `fps` | `number` | `1` | Screen snapshot frames per second. |
+| `wifiOnly` | `boolean` | `false` | Only upload over Wi-Fi. |
+| `debug` | `boolean` | `false` | Verbose SDK logging. |
+| `network` | `object` | — | Network capture tuning (see below). |
+
+**Network capture options** (`config.network`):
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `captureBodies` | `boolean` | `false` | Capture request/response bodies. |
+| `maxBodyBytes` | `number` | `4096` | Truncate captured bodies beyond this length. |
+| `redactHeaders` | `string[] \| boolean` | sensitive denylist | Header names to drop; `true` drops all, `false` keeps all. |
+| `ignoreUrls` | `Array<string \| RegExp>` | — | URLs to skip entirely (substring for strings, `.test` for RegExp). |
+
+## API reference
+
+Reach the client through the default export (`Replay`), or `getClient()`.
+
+| Method | Signature | Description |
+|---|---|---|
+| `start` | `start(config)` | Boot the SDK and start recording. Idempotent. |
+| `identify` | `identify(distinctId, traits?)` | Attach a known-user identity, with optional traits as metadata. |
+| `track` | `track(name, props?)` | Record a custom timeline / funnel event. |
+| `captureException` | `captureException(error, opts?)` | Report a handled error to the timeline and issues (`handled` defaults to `true`; extra `opts` keys merge into the payload). |
+| `stopApplicationAndUploadData` | `stopApplicationAndUploadData()` | Flush and upload the current session's buffered data immediately. |
+| `stop` | `stop()` | Stop recording, flush, and detach the JS observers. |
+| `screen` | `screen(name)` | Set the current screen name. |
+| `trackScreens` | `trackScreens(navigationRef)` | Automatic screen tracking for React Navigation. |
+| `trackInput` | `trackInput(label, value, masked?)` | Record a `TextInput` value from `onEndEditing`; `masked: true` drops the value (`"***"`). |
+| `setUserProperty` | `setUserProperty(key, value)` | Set a sticky, user-level property. |
+| `setSessionProperty` | `setSessionProperty(key, value)` | Set a property for this session only. |
+| `setMetadata` | `setMetadata(key, value)` | Set sticky metadata. |
+| `addTagWithProperties` | `addTagWithProperties(tag, props)` | Add a tag with attached properties. |
+| `pauseRecording` | `pauseRecording()` | Pause capture. |
+| `resumeRecording` | `resumeRecording()` | Resume capture. |
+| `startNewSession` | `startNewSession()` | End the current session and begin a new one. |
+| `cancelSession` | `cancelSession()` | Discard the current session without uploading. |
+| `isRecording` | `isRecording(): Promise<boolean>` | Whether the SDK is currently recording. |
+| `getSessionId` | `getSessionId(): Promise<string>` | The current session id. |
+| `urlForCurrentSession` | `urlForCurrentSession(): Promise<string>` | Deep link to the current session. |
+| `urlForCurrentUser` | `urlForCurrentUser(): Promise<string>` | Deep link to the current user. |
+| `optOut` | `optOut(bool)` | Stop all recording for this user (GDPR). |
+| `isOptedOut` | `isOptedOut(): Promise<boolean>` | Whether the user has opted out. |
+| `markSessionAsFavorite` | `markSessionAsFavorite()` | Flag the current session as a favorite. |
+| `setAppVersion` | `setAppVersion(name, code)` | Set the app version name and build code. |
+| `setPushNotificationToken` | `setPushNotificationToken(token)` | Attach a push token to the session. |
+| `log` | `log(message, level)` | Bridge a log line onto the timeline. |
+| `setMaskStyle` | `setMaskStyle(style)` | Set masked-region render style (`Blur \| Overlay \| Pixelate`). |
+| `occludeAllTextFields` | `occludeAllTextFields(bool)` | Hide all text fields from replay. |
+| `occludeAllTextView` | `occludeAllTextView(bool)` | Hide all text views from replay. |
+| `occludeSensitiveScreen` | `occludeSensitiveScreen(bool)` | Occlude the entire current screen. |
+
+### React Navigation screen tracking
+
+```tsx
+import { trackScreens } from '@replayfyapp/react-native';
+
+const navRef = useNavigationContainerRef();
+
+<NavigationContainer
+  ref={navRef}
+  onReady={() => trackScreens(navRef)}
+  onStateChange={() => trackScreens(navRef)}
+/>;
+```
+
+## Privacy & masking
+
+Replayfy keeps sensitive data off your servers.
+
+- **`<ReplayMask>`** — wrap any element to mask it in replay:
+
+  ```tsx
+  import { ReplayMask } from '@replayfyapp/react-native';
+
+  <ReplayMask>
+    <CardNumberField />
+  </ReplayMask>;
+  ```
+
+- **Automatic input masking** — secure/password inputs are masked automatically. Set `maskAllInputs: true` to mask every input.
+
+- **Mask style** — choose how masked regions render:
+
+  ```tsx
+  import { ReplayMaskStyle } from '@replayfyapp/react-native';
+
+  Replay.setMaskStyle(ReplayMaskStyle.Blur); // Blur | Overlay | Pixelate
+  ```
+
+- **Screen occlusion** — hide fields or entire flows:
+
+  ```tsx
+  Replay.occludeAllTextFields(true);
+  Replay.occludeAllTextView(true);
+  Replay.occludeSensitiveScreen(true);
+  ```
+
+- **Network redaction** — drop sensitive headers or skip URLs via `config.network.redactHeaders` and `config.network.ignoreUrls`; request/response bodies are off by default.
+
+<Warning>
+For per-field input values, pass `masked: true` to `trackInput` — the value is dropped (recorded as `"***"`) and never leaves the device.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users">
+    Attach identities and traits to power funnels and cohorts.
+  </Card>
+  <Card title="Track events" icon="bolt" href="/guides/track-events">
+    Record custom events for analytics and funnels.
+  </Card>
+  <Card title="Privacy & masking" icon="shield" href="/guides/privacy-and-masking">
+    Mask, occlude, and redact sensitive data.
+  </Card>
+</CardGroup>

@@ -1,0 +1,87 @@
+---
+title: "Privacy & masking"
+description: "Keep sensitive data off the wire — mask or block any element, field, or region before it's ever sent."
+---
+
+Replayfy is private by default: text inputs are redacted before anything leaves the
+device. You control exactly what's captured on top of that — per element, per
+region, or globally — and dashboard settings override your in-code config, so you
+can tighten masking without shipping a new build.
+
+## Mask everything at once
+
+Turn on `maskAllInputs` (on by default on web) to redact the value of every input:
+
+<Tabs>
+  <Tab title="Web">
+    ```ts
+    initReplay({ apiKey: "rpl_pk_YOUR_KEY", maskAllInputs: true });
+    ```
+  </Tab>
+  <Tab title="iOS">
+    ```swift
+    Replay.start(with: ReplayConfig(apiKey: "rpl_pk_YOUR_KEY", maskAllInputs: true))
+    ```
+  </Tab>
+  <Tab title="Android">
+    ```kotlin
+    ReplayConfig(apiKey = "rpl_pk_YOUR_KEY", maskAllInputs = true)
+    ```
+  </Tab>
+  <Tab title="React Native">
+    ```tsx
+    Replay.start({ projectKey: "rpl_pk_YOUR_KEY", maskAllInputs: true });
+    ```
+  </Tab>
+  <Tab title="Flutter">
+    ```dart
+    Replay.start(const ReplayConfig(projectKey: "rpl_pk_YOUR_KEY", maskAllInputs: true));
+    ```
+  </Tab>
+</Tabs>
+
+## Mask specific elements
+
+<Tabs>
+  <Tab title="Web">
+    Add `rpf-mask` to redact an element's text/value, or `rpf-block` to blank the whole element (great for third-party embeds):
+    ```html
+    <span class="rpf-mask">4111 1111 1111 1111</span>
+    <div class="rpf-block"><!-- third-party chat widget --></div>
+    ```
+    Customize the selectors with `maskTextSelector` and `blockSelector` in config.
+  </Tab>
+  <Tab title="iOS">
+    Occlude any view's region (SwiftUI), and choose how masked regions render:
+    ```swift
+    myView.replayOcclude()                       // mask this view
+    Replay.setMaskStyle(.blur)                   // .blur (default) · .overlay · .pixelate
+    ```
+    `replayOcclude(blockGestures:)` also suppresses taps on the masked region.
+  </Tab>
+  <Tab title="Android">
+    ```kotlin
+    Replay.setMaskStyle(ReplayMaskStyle.BLUR)     // BLUR (default) or OVERLAY
+    ```
+    Tag views to mask them, or mask whole screens — see the Android SDK page for view-level masking.
+  </Tab>
+  <Tab title="React Native">
+    Wrap anything sensitive in `<ReplayMask>`:
+    ```tsx
+    import { ReplayMask, ReplayMaskStyle } from "@replayfyapp/react-native";
+
+    <ReplayMask style={ReplayMaskStyle.blur}>
+      <CreditCardField />
+    </ReplayMask>;
+    ```
+  </Tab>
+  <Tab title="Flutter">
+    Wrap sensitive widgets in `ReplayMask`, and set the global style:
+    ```dart
+    ReplayMask(child: CreditCardField());
+    await Replay.setMaskStyle(ReplayMaskStyle.pixelate); // blur · overlay · pixelate
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>Masking happens on-device, before capture — masked content is never transmitted or stored. There's no way to un-mask it later, so err toward masking anything sensitive.</Warning>

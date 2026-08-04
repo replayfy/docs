@@ -1,0 +1,41 @@
+---
+title: "Identify users"
+description: "Attach a known user to the session so replays, funnels, and filters are searchable by who did what."
+---
+
+Call `identify` once you know who the user is — typically right after login. Every
+session before and after links to that user, and earlier anonymous sessions are
+associated retroactively. Pass a stable `distinctId` (your own user id) plus any
+traits you want to filter and segment on (`email`, `name`, `plan`, …).
+
+<Note>Web snippets assume `replay` is the value returned by `initReplay()`. With the CDN `<script>` build, call `Replayfy.identify(...)` instead.</Note>
+
+<Tabs>
+  <Tab title="Web">
+    ```ts
+    replay.identify("user_123", { email: "ada@example.com", plan: "pro" });
+    ```
+  </Tab>
+  <Tab title="iOS">
+    ```swift
+    Replay.identify("user_123", properties: ["email": "ada@example.com", "plan": "pro"])
+    ```
+  </Tab>
+  <Tab title="Android">
+    ```kotlin
+    Replay.identify("user_123", mapOf("email" to "ada@example.com", "plan" to "pro"))
+    ```
+  </Tab>
+  <Tab title="React Native">
+    ```tsx
+    Replay.identify("user_123", { email: "ada@example.com", plan: "pro" });
+    ```
+  </Tab>
+  <Tab title="Flutter">
+    ```dart
+    Replay.identify("user_123", properties: {"email": "ada@example.com", "plan": "pro"});
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>`email`, `name`, and `plan` are promoted to first-class, filterable user fields on the dashboard. Any other trait is kept as searchable custom metadata.</Tip>

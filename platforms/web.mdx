@@ -1,0 +1,194 @@
+---
+title: "Web SDK"
+description: "Session replay, product analytics, and error monitoring for the browser."
+---
+
+Record pixel-accurate session replays, track product events, and capture every JavaScript error from any web app — with a few lines of code.
+
+## Install
+
+<CodeGroup>
+
+```bash npm
+npm install @replayfyapp/browser
+```
+
+```html Script tag
+<!-- Self-contained bundle — exposes a global `Replayfy` -->
+<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+```
+
+</CodeGroup>
+
+## Initialize
+
+<Steps>
+
+<Step title="Start recording">
+
+Call the initializer as early as possible — recording begins immediately. Only `apiKey` and `apiHost` are required.
+
+<CodeGroup>
+
+```ts npm
+import { initReplay } from "@replayfyapp/browser";
+
+const replay = initReplay({
+  apiKey: "rpl_pk_YOUR_KEY",
+  apiHost: "https://us.replayfy.app",
+});
+```
+
+```html Script tag
+<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+<script>
+  Replayfy.init({
+    apiKey: "rpl_pk_YOUR_KEY",
+    apiHost: "https://us.replayfy.app",
+  });
+</script>
+```
+
+</CodeGroup>
+
+`init()` is idempotent — a second call returns the live session instead of starting a second recording.
+
+</Step>
+
+<Step title="Identify the user (optional)">
+
+Attach a distinct id and traits so replays and events are tied to a real person.
+
+```ts
+replay.identify("user_123", { email: "ada@example.com", plan: "pro" });
+replay.track("checkout_started");
+```
+
+With the script tag, the `Replayfy` global forwards the same API (`Replayfy.identify(...)`, `Replayfy.track(...)`) after `init()`, so you never have to hold onto the returned controller.
+
+</Step>
+
+</Steps>
+
+<Note>
+**React / Next.js** — call `initReplay(...)` once in a top-level client effect (e.g. a root `useEffect` or a `"use client"` provider) so it runs in the browser, not during server rendering. The single instance persists across route changes.
+</Note>
+
+## Verify
+
+<Check>
+Reload your app, click around for a few seconds, then open the **Sessions** view in your Replayfy dashboard — your first session appears within a minute.
+</Check>
+
+## Configuration
+
+Pass these options to `initReplay(config)` (npm) or `Replayfy.init(config)` (CDN). Only `apiKey` and `apiHost` are required.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `apiKey` | `string` | — | **Required.** Your project's publishable API key. |
+| `apiHost` | `string` | — | **Required.** Replayfy ingest host, e.g. `https://us.replayfy.app`. |
+| `projectId` | `string` | — | Optional project identifier, useful when one key spans environments. |
+| `distinctId` | `string` | — | Identify the user at startup (equivalent to calling `identify` immediately). |
+| `revId` | `string` | — | Build / release id of the deployed app, to scope replays and funnels to one release. |
+| `sessionId` | `string` | auto | Override the generated session id (advanced; normally left unset). |
+| `flushIntervalMs` | `number` | `3000` | How often, in milliseconds, buffered events are sent. |
+| `maxBufferSize` | `number` | — | Maximum number of events to hold in memory between flushes. |
+| `captureConsole` | `boolean` | `true` | Record `console.*` output on the session timeline. |
+| `captureNetwork` | `boolean` | `true` | Record fetch/XHR requests (method, URL, status, timing). |
+| `captureErrors` | `boolean` | `true` | Capture unhandled errors and promise rejections. |
+| `captureHeaders` | `boolean` | `false` | Include request/response headers on captured network events. |
+| `redactHeaderNames` | `string[]` | — | Extra header names (beyond the built-in deny-list) whose values are masked before sending. |
+| `maxBodyBytes` | `number` | `8192` | Maximum captured request/response body size, in bytes. |
+| `captureResourceTimings` | `boolean` | `true` | Capture per-resource timing (images, scripts, CSS, fonts). |
+| `resourceMinDurationMs` | `number` | `0` | Skip resource-timing entries faster than this many milliseconds to trim volume. |
+| `maskAllInputs` | `boolean` | `true` | Mask the value of every `<input>` in the replay. |
+| `maskTextSelector` | `string` | — | CSS selector for text nodes to mask in the replay. |
+| `blockSelector` | `string` | — | CSS selector for elements to fully block (rendered as a placeholder). |
+| `redactUrls` | `Array<string \| RegExp>` | — | Patterns whose matches are stripped from captured URLs. |
+| `sdk` | `object` | — | Override SDK descriptor fields (name/version) reported with each batch. |
+| `beforeSend` | `(event) => event \| null` | — | Inspect or mutate each batch before it's sent; return `null` to drop it. |
+| `fetchImpl` | `typeof fetch` | `window.fetch` | Custom `fetch` implementation (advanced/testing). |
+
+<Note>
+Privacy, capture, and sampling settings configured in your Replayfy **dashboard are fetched at startup and take precedence over the values passed to `init()`** — so you can tighten masking or pause recording without shipping a new build.
+</Note>
+
+## API reference
+
+`initReplay()` returns a controller with the methods below. With the CDN global, the same methods are available as `Replayfy.identify(...)`, `Replayfy.track(...)`, etc., after `Replayfy.init(...)`.
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `identify` | `identify(distinctId: string, props?: object): void` | Associate the current session with a user. Also accepts a single payload object: `identify({ distinctId, ...traits })`. |
+| `track` | `track(name: string, properties?: object): void` | Record a custom product event. Use stable `snake_case`/`camelCase` names so they're searchable in funnels. |
+| `captureException` | `captureException(error: Error, opts?: { handled?: boolean }): void` | Report a handled exception as a first-class issue (name, message, parsed stack). `opts.handled` defaults to `true`; pass `false` to record a fatal error. |
+| `flush` | `flush(): Promise<void>` | Send any buffered events immediately. |
+| `stop` | `stop(): Promise<void>` | Stop all capture, end the session, and flush the final batch. |
+| `sessionId` | `sessionId: string` | The current session's id, handy for correlating with your own logs. |
+
+```ts
+// handled error
+try {
+  risky();
+} catch (e) {
+  replay.captureException(e);
+}
+
+// fatal error
+replay.captureException(new Error("boom"), { handled: false });
+
+await replay.flush();
+await replay.stop();
+console.log(replay.sessionId);
+```
+
+## Privacy & masking
+
+Replayfy is designed to keep sensitive data in the browser — **every `<input>` value is masked by default**. Tune redaction with these options:
+
+- **`maskAllInputs`** (default `true`) — masks the value of every input field in the replay.
+- **`maskTextSelector`** — CSS selector for text nodes to mask (e.g. `.pii, .account-number`), shown as `●●●●` in playback.
+- **`blockSelector`** — CSS selector for elements to block entirely; they render as a placeholder box.
+- **`redactUrls`** — string/`RegExp` patterns stripped from captured URLs, so tokens and ids never leave the page.
+- **`captureHeaders`** (default `false`) — headers are only captured when explicitly enabled.
+- **`redactHeaderNames`** — additional header names whose values are masked, on top of the always-on built-in deny-list.
+- **`maxBodyBytes`** — caps how much of a request/response body is ever captured.
+
+```html
+<!-- inputs are masked automatically -->
+<input type="text" name="ssn" />
+
+<!-- mask the TEXT of an element -->
+<span class="rpf-mask">4111 1111 1111 1111</span>
+
+<!-- BLOCK an element entirely -->
+<div class="rpf-block"><!-- third-party chat widget --></div>
+```
+
+```ts
+initReplay({
+  apiKey: "rpl_pk_YOUR_KEY",
+  apiHost: "https://us.replayfy.app",
+  maskAllInputs: true,
+  maskTextSelector: ".rpf-mask",
+  blockSelector: ".rpf-block",
+  redactUrls: [/\/reset-password\/[^/]+/],
+});
+```
+
+<Note>
+For full control, `beforeSend` receives each batch before it leaves the browser, so you can drop or scrub anything programmatically.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users">
+    Tie sessions and events to real people with distinct ids and traits.
+  </Card>
+  <Card title="Track events" icon="chart-line" href="/guides/track-events">
+    Fire custom product events to power funnels, segments, and retention.
+  </Card>
+  <Card title="Privacy & masking" icon="lock" href="/guides/privacy-and-masking">
+    Redact inputs, text, elements, and URLs before data leaves the browser.
+  </Card>
+</CardGroup>

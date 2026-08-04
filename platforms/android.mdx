@@ -1,0 +1,228 @@
+---
+title: "Android SDK"
+description: "Session replay, product analytics, and error monitoring for Android apps."
+---
+
+Record real user sessions, fire analytics events, and capture crashes from your Android app with a single `init` call.
+
+## Install
+
+Add the JitPack repository, then the dependency.
+
+<CodeGroup>
+
+```kotlin settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+```groovy settings.gradle
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+</CodeGroup>
+
+Then add the dependency to your app module:
+
+<CodeGroup>
+
+```kotlin build.gradle.kts
+dependencies {
+    implementation("com.github.replayfy:android-sdk:0.0.3")
+}
+```
+
+```groovy build.gradle
+dependencies {
+    implementation 'com.github.replayfy:android-sdk:0.0.3'
+}
+```
+
+</CodeGroup>
+
+<Note>Requires `minSdk 21` or higher. No manifest changes needed.</Note>
+
+## Initialize
+
+<Steps>
+  <Step title="Call init from Application.onCreate">
+    One call starts recording and wires tap capture, screen detection, crash handling, and performance monitoring.
+
+    ```kotlin
+    import android.app.Application
+    import com.replayfy.android.Replay
+    import com.replayfy.android.ReplayConfig
+
+    class MyApp : Application() {
+        override fun onCreate() {
+            super.onCreate()
+            Replay.init(
+                this,
+                ReplayConfig(
+                    apiKey = "rpl_pk_YOUR_KEY",
+                    apiHost = "https://us.replayfy.app",
+                ),
+            )
+        }
+    }
+    ```
+  </Step>
+  <Step title="Register the Application class">
+    Point `android:name` at your `Application` subclass in `AndroidManifest.xml`.
+
+    ```xml
+    <application android:name=".MyApp" ... />
+    ```
+  </Step>
+  <Step title="Identify users and track events (optional)">
+    ```kotlin
+    Replay.identify("user_123", mapOf("email" to "a@b.com", "plan" to "pro"))
+    Replay.track("purchase", mapOf("amount" to 4200, "currency" to "USD"))
+    ```
+  </Step>
+</Steps>
+
+## Verify
+
+<Check>Reload the app and foreground it. Your first session appears in the Replayfy dashboard within a few seconds. Wire `addVerificationListener` to fire a callback after the first successful upload for an in-app "Verify integration" flow.</Check>
+
+## Configuration
+
+Only `apiKey` and `apiHost` are required; every other option has a sensible default. Pass overrides through `ReplayConfig`.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `apiKey` | `String` | **required** | Project API key from your dashboard. |
+| `apiHost` | `String` | **required** | Ingest base URL — `https://us.replayfy.app`. |
+| `projectId` | `String?` | `null` | Only needed when one key spans multiple projects. |
+| `distinctId` | `String?` | `null` | Known user id at init time; otherwise an install-stable anonymous id is generated. |
+| `flushIntervalMs` | `Long` | `5000` | How often the buffered batch is uploaded (ms). |
+| `maxBufferSize` | `Int` | `500` | Events buffered in memory before a flush is forced. |
+| `captureConsole` | `Boolean` | `true` | Capture `Log.x` / stdout / stderr output. |
+| `captureNetwork` | `Boolean` | `false` | Capture HTTP requests (off by default to avoid PII). |
+| `captureErrors` | `Boolean` | `true` | Capture uncaught exceptions and crashes. |
+| `captureTouch` | `Boolean` | `true` | Capture taps and gestures from the view tree. |
+| `captureHeaders` | `Boolean` | `false` | Include request/response headers in network capture (PII risk). |
+| `captureBodies` | `Boolean` | `true` | Include request/response bodies in network capture (capped, PII risk). |
+| `maxBodyBytes` | `Int` | `4096` | Max captured body bytes per network event; larger bodies are truncated. |
+| `captureSnapshotPixels` | `Boolean` | `true` | Pixel-accurate playback vs. lighter tree-only "wireframe" playback. |
+| `snapshotIntervalMs` | `Long` | `500` | Screen-capture cadence (~2 FPS); floored at 200 ms. |
+| `autoScreenName` | `Boolean` | `true` | Auto-name the current screen from each Activity's class name. |
+| `useRemoteConfig` | `Boolean` | `true` | Let dashboard settings override these values at runtime (your values act as cold-start fallbacks; ~15-minute refresh). |
+
+## API reference
+
+All methods are exposed on the `Replay` singleton and are static-callable from Kotlin and Java.
+
+### Identity & events
+
+| Method | Description |
+|---|---|
+| `identify(distinctId, properties?)` | Attach a known-user identity; earlier anonymous sessions link retroactively. |
+| `track(name, properties?)` | Record a custom timeline / funnel event. |
+| `setUserProperty(key, value)` | Attach a property that sticks to the user across sessions. |
+| `setSessionProperty(key, value)` | Attach a property to the current session only. |
+| `addTagWithProperties(name, properties?)` | Add a session-level tag for filtering the session list. |
+| `markSessionAsFavorite()` | Star the current session so it surfaces in the "starred" filter. |
+| `setAppVersion(version, build?)` | Override the auto-detected app version/build. |
+| `setPushNotificationToken(token, platform?)` | Attach the device push token (`platform` defaults to `"fcm"`). |
+
+### Error monitoring
+
+| Method | Description |
+|---|---|
+| `captureException(error, handled?, properties?)` | Report a caught throwable. `handled = false` marks it fatal (crash) vs. exception. |
+| `reportBugEvent(name, description?, properties?)` | Flag a user-submitted bug report and trigger a fresh screen capture. |
+| `log(level, message, stack?)` | Bridge your logging framework into the console tab. `level` ∈ `log`/`info`/`warn`/`error`/`debug`. |
+
+### Screen tracking
+
+| Method | Description |
+|---|---|
+| `tagScreenName(name)` | Manually set the current screen name. |
+| `addObservedView(view, screenName, viewName?)` | Track a Compose/custom view as a screen (emits on attach/detach). |
+| `setAutomaticScreenNameTagging(enabled)` | Toggle Activity-based auto screen naming at runtime. |
+
+### Text input tracking
+
+| Method | Description |
+|---|---|
+| `addObservedInput(editText)` | Record an `EditText`'s value on focus-loss (passwords auto-masked). |
+| `trackInput(label, value, masked)` | Record a value not backed by an `EditText`; `masked = true` sends `"***"`. |
+
+### Network capture
+
+Add the interceptor to your OkHttp client. When `captureNetwork` is off, it passes through with zero overhead.
+
+```kotlin
+val client = OkHttpClient.Builder()
+    .addInterceptor(Replay.networkInterceptor())
+    .build()
+```
+
+| Method | Description |
+|---|---|
+| `networkInterceptor()` | Returns an OkHttp `Interceptor` that records requests when `captureNetwork` is on. |
+
+### Session control
+
+| Method | Description |
+|---|---|
+| `isRecording()` | Whether the SDK is currently recording. |
+| `pauseRecording()` / `resumeRecording()` | Pause/resume screen capture while keeping the interaction timeline. |
+| `startNewSession()` | Force-end the current session and start a new one (logout/login, re-bucketing). |
+| `stop()` | End the current session and flush the buffered batch. The next foregrounding starts a fresh session. |
+| `stopApplicationAndUploadData(timeoutMs?)` | Stop and block (up to `timeoutMs`, default 5000) until the batch is uploaded or persisted. |
+| `enableAdvancedGestureRecognizer(enabled)` | Capture long-press, swipe, and pinch in addition to taps (off by default). |
+| `addVerificationListener(listener)` / `removeVerificationListener(listener)` | Fire a callback after the first successful upload. |
+
+## Privacy & masking
+
+All masking happens on-device before anything is uploaded. Password fields are masked automatically; everything else is opt-in.
+
+```kotlin
+Replay.addPrivacyView(cardNumberField)             // mask one view (and its children)
+Replay.removePrivacyView(cardNumberField)
+
+Replay.occludeAllTextFields(true)                  // mask every EditText
+Replay.occludeAllTextView(true)                    // mask every TextView / Button
+Replay.applyOcclusion(CreditCardView::class.java)  // mask all instances of a view class
+Replay.removeOcclusion(CreditCardView::class.java)
+Replay.occludeSensitiveScreen(true)                // mask the entire screen
+
+Replay.setMaskStyle(ReplayMaskStyle.BLUR)          // BLUR (default) or OVERLAY
+Replay.setBlurDownscale(12)                        // stronger blur = larger factor
+```
+
+| Method | Description |
+|---|---|
+| `addPrivacyView(view)` / `removePrivacyView(view)` | Mask a single view (marks propagate to descendants). |
+| `occludeAllTextFields(occlude)` | Mask every `EditText` in the app. |
+| `occludeAllTextView(occlude)` | Mask every `TextView` / `Button`. |
+| `applyOcclusion(viewClass)` / `removeOcclusion(viewClass)` | Mask every instance of a custom view class. |
+| `occludeSensitiveScreen(occlude)` | Mask the entire captured screen. |
+| `setMaskStyle(style)` | Default masking style — `ReplayMaskStyle.BLUR` or `ReplayMaskStyle.OVERLAY`. |
+| `setBlurDownscale(factor)` | Blur strength for `BLUR` regions (default 12; higher = stronger). |
+
+<CardGroup cols={2}>
+  <Card title="Identify users" icon="user" href="/guides/identify-users">
+    Attach known-user identities so anonymous sessions link retroactively.
+  </Card>
+  <Card title="Track events" icon="chart-line" href="/guides/track-events">
+    Fire custom events that power funnels, retention, and filters.
+  </Card>
+  <Card title="Privacy & masking" icon="shield-halved" href="/guides/privacy-and-masking">
+    Redact sensitive views and inputs before anything leaves the device.
+  </Card>
+</CardGroup>
