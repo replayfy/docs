@@ -10,11 +10,11 @@ Replayfy records screens, taps, gestures, network, console, and crashes on the n
 <CodeGroup>
 
 ```bash npm
-npm install @replayfyapp/react-native@0.0.3
+npm install @replayfyapp/react-native
 ```
 
 ```bash yarn
-yarn add @replayfyapp/react-native@0.0.3
+yarn add @replayfyapp/react-native
 ```
 
 </CodeGroup>
@@ -52,8 +52,8 @@ Boot the SDK once, as early as possible. This is idempotent.
 import Replay from '@replayfyapp/react-native';
 
 Replay.start({
-  projectKey: 'rpl_pk_YOUR_KEY',
-  ingestUrl: 'https://us.replayfy.app',
+  apiKey: 'rpl_pk_YOUR_KEY',
+  apiHost: 'https://us.replayfy.app',
 });
 ```
 </Step>
@@ -68,8 +68,8 @@ export default function App() {
   return (
     <ReplayProvider
       config={{
-        projectKey: 'rpl_pk_YOUR_KEY',
-        ingestUrl: 'https://us.replayfy.app',
+        apiKey: 'rpl_pk_YOUR_KEY',
+        apiHost: 'https://us.replayfy.app',
       }}
     >
       <RootNavigator />
@@ -103,8 +103,8 @@ Pass these to `Replay.start(config)`:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `projectKey` | `string` | **required** | Your project API key from the dashboard. |
-| `ingestUrl` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
+| `apiKey` | `string` | **required** | Your project API key from the dashboard. |
+| `apiHost` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
 | `distinctId` | `string` | — | Known user id at start (otherwise an install-stable anonymous id is used). |
 | `recordScreen` | `boolean` | `true` | Capture screen frames. |
 | `recordNetwork` | `boolean` | `true` | Capture `fetch` + `XHR` traffic. |
