@@ -187,6 +187,20 @@ try {
     Replay.captureException(e, handled = true, properties = mapOf("screen" to "checkout"))
 }
 ```
+
+```dart Flutter
+import 'package:replayfy_flutter/replayfy_flutter.dart';
+
+try {
+  await upload();
+} catch (e, stack) {
+  // handled defaults to true → "Exception"
+  Replay.captureException(e, stackTrace: stack, properties: {'screen': 'checkout'});
+}
+
+// Mark a caught error as fatal → "Crash"
+Replay.captureException(e, handled: false);
+```
 </CodeGroup>
 
 <Note>

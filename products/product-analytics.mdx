@@ -86,6 +86,12 @@ Replay.track("checkout_completed", mapOf(
   "plan" to "pro", "amount" to 49
 ))
 ```
+
+```dart Flutter
+Replay.track('checkout_completed', properties: {
+  'plan': 'pro', 'amount': 49,
+});
+```
 </CodeGroup>
 
 Tracked event names are attached to the session they fire in, so you can later filter recordings by "sessions that fired `checkout_completed`" and build Funnels and Cohorts from those events. For the full guide to instrumenting events, see [Track custom events](/guides/track-events).
