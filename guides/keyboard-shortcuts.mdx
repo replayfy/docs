@@ -1,0 +1,137 @@
+---
+title: "Keyboard shortcuts"
+description: "Every keyboard shortcut in the Replayfy dashboard — replay transport, the command palette, workspace switching, and quick-create sequences."
+---
+
+Replayfy is built to be driven from the keyboard. You can scrub a recording, jump between sessions, hop to any page, and create funnels or cohorts without ever reaching for the mouse. This page lists the shortcuts that actually ship in the dashboard, grouped by where they work.
+
+<Info>
+  Shortcuts that use a modifier are written with the macOS keys (`⌘`, `⌥`, `⇧`). On Windows and Linux, use `Ctrl` wherever you see `⌘` and `Alt` wherever you see `⌥`.
+</Info>
+
+<Tip>
+  You can pull up an in-app cheat sheet at any time: open the account menu (your avatar, bottom-left of the dashboard) and choose **Keyboard shortcuts**.
+</Tip>
+
+## Session replay player
+
+These work while you have a recording open, for both web and mobile sessions. They are ignored while your cursor is in a text field, so typing a comment or a filter never triggers playback.
+
+| Action | Shortcut |
+| --- | --- |
+| Play / pause | `Space` or `K` |
+| Step backward | `←` |
+| Step forward | `→` |
+| Jump backward (larger step) | `⇧` `←` |
+| Jump forward (larger step) | `⇧` `→` |
+| Slow playback down | `J` |
+| Speed playback up | `L` |
+| Previous session | `[` |
+| Next session | `]` |
+| Toggle focus mode | `F` |
+| Exit focus mode | `Esc` |
+
+<Note>
+  `J`, `K`, and `L` are the classic editor-style transport: `J` slows playback down, `L` speeds it up, and `K` (like `Space`) toggles play/pause. Playback speed steps through the same set you get from the speed button on the player — `0.25×` up to `4×`.
+</Note>
+
+**Focus mode** (`F`) expands the player into a distraction-free view that hides the surrounding panels so you can concentrate on the screen. Press `F` again or hit `Esc` to return to the full session view.
+
+<Tip>
+  The arrow keys nudge the playhead by a small amount; hold `⇧` for a bigger jump. Use them to land precisely on the moment just before a rage click or an error.
+</Tip>
+
+### Seeking with the mouse
+
+A few player actions are mouse-only — worth knowing alongside the keys:
+
+- **Click any event marker** on the scrubber to seek straight to that moment.
+- **Click and drag the scrubber** to scrub through the recording.
+- The **speed** control and **Skip idle time** button live in the player's hover controls at the bottom of the stage.
+
+## Global & navigation
+
+These work anywhere in the dashboard.
+
+| Action | Shortcut |
+| --- | --- |
+| Open / close the command palette | `⌘` `K` |
+| Switch to workspace 1–9 | `⌘` `1` … `⌘` `9` |
+| Sign out | `⌥` `⇧` `Q` |
+
+<Note>
+  `⌘1`–`⌘9` map to your workspaces in the order they appear in the workspace switcher, so `⌘1` is always your first workspace.
+</Note>
+
+## Command palette
+
+Press `⌘K` to open the command palette — a single search box that jumps to pages, recordings, users, funnels, cohorts, playlists, and settings panels, and can kick off "New" actions. Start typing to filter; live results for recordings and users appear as you search.
+
+| Action | Shortcut |
+| --- | --- |
+| Open / close the palette | `⌘` `K` |
+| Move selection down | `↓` |
+| Move selection up | `↑` |
+| Open the highlighted result | `↵` Enter |
+| Close the palette | `Esc` |
+
+## Quick-create sequences
+
+Create the most common objects with a two-key sequence: tap `N`, then the object's key. After you press `N` you have a short moment to press the second key. These are ignored while you are typing in a field.
+
+| Action | Shortcut |
+| --- | --- |
+| New funnel | `N` then `F` |
+| New cohort | `N` then `C` |
+| New playlist | `N` then `P` |
+| New alert | `N` then `A` |
+
+<Tip>
+  The same "New" actions are available inside the command palette (`⌘K`), which shows the matching `N` sequence next to each one — handy while you learn them.
+</Tip>
+
+## Recordings search & filters
+
+The **Recordings** list has its own search bar for building session filters (by user, URL, device, and more). While you are on that page:
+
+| Action | Shortcut |
+| --- | --- |
+| Focus the search / filter bar | `⌘` `K` |
+| Move through suggestions | `↑` / `↓` |
+| Apply the highlighted suggestion | `↵` Enter or `Tab` |
+| Accept the inline autocomplete | `Tab` |
+| Remove the last filter chip | `Backspace` (with the box empty) |
+| Close suggestions / leave the box | `Esc` |
+
+<Note>
+  On the Recordings list, `⌘K` jumps straight into the filter bar instead of opening the global command palette — so you can start narrowing sessions immediately. Everywhere else in the dashboard, `⌘K` opens the palette.
+</Note>
+
+## Quick reference
+
+<AccordionGroup>
+  <Accordion title="I'm watching a recording" icon="circle-play">
+    `Space`/`K` play-pause, `←`/`→` step (add `⇧` for a bigger jump), `J`/`L` slow down / speed up, `[`/`]` previous / next session, `F` focus mode, `Esc` to leave focus mode.
+  </Accordion>
+  <Accordion title="I want to go somewhere fast" icon="magnifying-glass">
+    `⌘K` opens the command palette — search for any page, recording, user, funnel, cohort, or settings panel, then `↑`/`↓` and `↵` to jump to it.
+  </Accordion>
+  <Accordion title="I want to create something" icon="plus">
+    Tap `N`, then `F` (funnel), `C` (cohort), `P` (playlist), or `A` (alert). Or open `⌘K` and pick the matching "New" action.
+  </Accordion>
+  <Accordion title="I work across several workspaces" icon="grid-2">
+    `⌘1`–`⌘9` switch straight to a workspace by its position in the switcher. `⌥⇧Q` signs you out.
+  </Accordion>
+</AccordionGroup>
+
+<CardGroup cols={3}>
+  <Card title="Session replay" icon="circle-play" href="/products/session-replay">
+    Watch, scrub, and share recordings of real sessions.
+  </Card>
+  <Card title="Find recordings" icon="magnifying-glass" href="/products/session-replay">
+    Build filters and search to surface the sessions that matter.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install a Replayfy SDK and start capturing sessions.
+  </Card>
+</CardGroup>

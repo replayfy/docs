@@ -1,0 +1,157 @@
+---
+title: "Administration"
+description: "Invite teammates, assign roles, manage members, and control the workspace settings that shape what every SDK captures."
+---
+
+A Replayfy **workspace** is where your recordings, dashboards, cohorts, and settings live. As a workspace admin you decide who gets in, what each person can do, and how the SDK behaves across every page load and app session.
+
+Everything on this page happens in the dashboard at [app.replayfy.app](https://app.replayfy.app) under **Settings**. Most administrative actions require the **Admin** or **Owner** role — Members can view the team and settings, but not change them, and Viewers only watch recordings.
+
+<Note>
+  Every rule below is enforced on the server, not just hidden in the UI. If a button isn't offered to you, the API would refuse the action too.
+</Note>
+
+## Invite teammates
+
+Open **Settings → Team** and use **Invite member** (top right). You need the **Admin** or **Owner** role to see it.
+
+<Steps>
+  <Step title="Enter one or more email addresses">
+    Paste emails into the field, separated by commas or new lines. Each recipient gets their own invitation email.
+  </Step>
+  <Step title="Pick the role they'll join with">
+    Choose **Viewer**, **Member**, or **Admin**. You can change it later. (Granting **Owner** is handled separately — see [Roles and permissions](#roles-and-permissions).)
+  </Step>
+  <Step title="Send invites">
+    Recipients get a link that adds them to this workspace when they accept. If some addresses are skipped — for example, someone who is already a member or already has a pending invite — you'll see how many landed versus how many were skipped.
+  </Step>
+</Steps>
+
+<Warning>
+  Invitation links expire **one hour** after they're sent. If a teammate misses the window, resend the invite to issue a fresh link.
+</Warning>
+
+### Manage pending invites
+
+The **Pending invites** list under the Team tab shows everyone who has been invited but hasn't accepted yet.
+
+| Action | What it does |
+| --- | --- |
+| **Resend** | Issues a new link and emails it again. The previous link stops working — this is intentional, so a forwarded or leaked link can't be reused. |
+| **Resend all** | Refreshes and re-sends every pending invite at once. |
+| **Cancel** (trash icon) | Revokes the invite. The link stops working immediately. |
+
+<Tip>
+  You can't invite the same person twice while an invite is still pending. Resend the existing one instead of creating a new invite.
+</Tip>
+
+## Roles and permissions
+
+Every member holds exactly one role in a workspace. Roles are ranked — a higher role can do everything a lower one can, plus more.
+
+| Capability | Viewer | Member | Admin | Owner |
+| --- | :---: | :---: | :---: | :---: |
+| Watch recordings | ✓ | ✓ | ✓ | ✓ |
+| Comment, build playlists, manage cohorts / funnels / alerts, use Replayfy AI | | ✓ | ✓ | ✓ |
+| View **Settings** and the team roster | | ✓ | ✓ | ✓ |
+| Invite, change roles, and remove members | | | ✓ | ✓ |
+| Change capture settings (Recording, Privacy, Retention, Sampling) and manage API keys | | | ✓ | ✓ |
+| Rename the workspace | | | ✓ | ✓ |
+| Delete the workspace and grant the **Owner** role | | | | ✓ |
+
+<Info>
+  **Only an Owner can grant the Owner role.** An Admin can promote members up to Admin, but not to Owner — that keeps a workspace from ever gaining a second owner without the current owner's say-so.
+</Info>
+
+The Owner role is also protected in both directions: the workspace **Owner cannot be demoted or removed** by anyone, and an Owner can't demote themselves. This guarantees a workspace always has someone in charge.
+
+## Change a member's role
+
+Under **Settings → Team**, open the **Role** dropdown next to a member and pick the new role. The change takes effect immediately.
+
+- Admins and Owners can change roles.
+- The **Owner** row is read-only — you'll see a badge instead of a dropdown.
+- Only an **Owner** may promote someone to **Owner**.
+
+<Check>
+  Assigning **Owner** to another member is how you hand off a workspace — see [Transferring ownership](#leave-a-workspace).
+</Check>
+
+## Remove a member
+
+In the **Role** dropdown, choose **Remove member** and confirm in the dialog.
+
+<Warning>
+  Removing a member is immediate and can't be undone. They lose access to this workspace and all of its recordings right away. You can always invite them back later.
+</Warning>
+
+The workspace **Owner can't be removed** — the option isn't offered on their row.
+
+## Leave a workspace
+
+Anyone can remove themselves. At the bottom of **Settings → Team**, use **Leave workspace** and confirm. You immediately lose access; an admin can invite you back later.
+
+<Warning>
+  The **only owner of a workspace can't leave** — that would strand the workspace with no one in charge. The Leave button is disabled with an explanation until you either transfer ownership or delete the workspace.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Transferring ownership" icon="crown">
+    There's no single "transfer" button — ownership moves in two steps, and only the current Owner can start it:
+
+    <Steps>
+      <Step title="Promote a teammate to Owner">
+        In **Settings → Team**, change another member's role to **Owner**. Only an existing Owner can do this, and it's the point of no return for sole ownership.
+      </Step>
+      <Step title="Step down">
+        With a second Owner in place, the original Owner can now use **Leave workspace** (or stay on as a co-owner). The workspace never dips below one owner during the handoff.
+      </Step>
+    </Steps>
+  </Accordion>
+</AccordionGroup>
+
+## Workspace settings
+
+Open **Settings → General** to see the workspace's identity and the danger zone.
+
+| Setting | What it's for |
+| --- | --- |
+| **Workspace name** | Shown in the sidebar and on every invitation email. |
+| **Slug** | The URL-safe identifier used in dashboard links and as your SDK `projectId`. |
+| **Plan** | Your current plan. Quotas and feature access derive from it — see [Workspaces & billing](/platform/workspaces-and-billing). |
+
+### Danger zone
+
+The **Delete workspace** control lives here and is available to **Owners only**.
+
+<Warning>
+  Deleting a workspace permanently removes **every recording, comment, cohort, playlist, invite, and team member**. This can't be undone. The workspace disappears from everyone's switcher right away, and its stored data is purged in the background.
+</Warning>
+
+## Capture settings you control
+
+Beyond people and identity, admins tune **what the SDK captures** — no code change or redeploy required. Update a setting in the dashboard and it reaches your running SDKs on their next refresh, typically **within about 60 seconds**.
+
+| Tab | What it controls |
+| --- | --- |
+| **Recording** | What gets captured — console logs, network activity, errors, performance, canvas, cross-origin iframes, the minimum session length to keep, and native (iOS / Android) capture frame rate and quality. |
+| **Privacy & masking** | What is stripped from the DOM before it ever leaves the browser. **Block** drops an element's content entirely; **mask** replaces text with `●`. Also covers input masking, URL redaction, and allowed hosts. See the [Privacy & masking guide](/guides/privacy-and-masking). |
+| **Retention** | How long recordings are kept before they're automatically deleted, with the option to keep bookmarked or error sessions longer. |
+| **Sampling** | Record a representative subset of sessions to control volume, while still always capturing errors, identified users, or specific URLs. |
+
+<Note>
+  You don't ship a new build to change any of these. The dashboard is the source of truth; each SDK picks up the latest configuration on its own, so a masking rule or a paused recording propagates in roughly a minute.
+</Note>
+
+<Tip>
+  Privacy and masking rules apply on the client **before** data is sent to Replayfy. When in doubt, mask more — you can always loosen a rule later, but you can't recover data that was correctly never captured.
+</Tip>
+
+<CardGroup cols={2}>
+  <Card title="Workspaces & billing" icon="building" href="/platform/workspaces-and-billing">
+    Plans, quotas, usage, and how entitlements map to what your workspace can do.
+  </Card>
+  <Card title="Privacy & masking" icon="user-shield" href="/guides/privacy-and-masking">
+    Configure block and mask rules so sensitive data never leaves the browser.
+  </Card>
+</CardGroup>

@@ -1,0 +1,217 @@
+---
+title: "Search & filters"
+description: "Find any recording fast with Replayfy's filter grammar — signals, users, pages, devices, platform, country, and session duration."
+---
+
+The **Recordings** search bar turns "I need the sessions where checkout broke on mobile" into a precise query in a few keystrokes. It combines free-text search with a small, well-defined filter grammar: every filter you can type is one Replayfy can actually apply, so the list you get back always matches the chips above it.
+
+This page covers the full grammar — the filter keys, their values, and how to combine them — plus the scoped views you land in when you drill in from a playlist, funnel, incident, or issue.
+
+## Open the search bar
+
+<Steps>
+  <Step title="Go to Recordings">
+    Open [app.replayfy.app](https://app.replayfy.app) and select **Recordings** in the sidebar.
+  </Step>
+  <Step title="Focus the search field">
+    Click the search field at the top of the recordings rail, or press <kbd>⌘K</kbd> (macOS) / <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows/Linux) anywhere on the page.
+  </Step>
+  <Step title="Pick or type a filter">
+    An empty field shows **Suggested filters**, **Saved filters**, and your **Recent searches**. Start typing a key (like `user:` or `has:`) and Replayfy autocompletes the values from your own workspace data.
+  </Step>
+</Steps>
+
+<Tip>
+Everything Replayfy offers in the dropdown is a filter it can apply. If a dimension can't be filtered on yet, it simply isn't suggested — so a chip never quietly returns unfiltered results.
+</Tip>
+
+## The filter grammar
+
+A filter is a **key**, an **operator**, and a **value** — for example `browser:Chrome`. Most keys use `:` ("is"); duration uses `>` ("greater than").
+
+| Key | Operator | Example | Matches |
+| --- | --- | --- | --- |
+| `has` | `:` | `has:error` | Sessions containing a signal (see below) |
+| `user` | `:` | `user:jenny@acme.io` | An identified user, by email, name, or ID |
+| `page` | `:` | `page:/checkout` | Sessions that visited a path |
+| `browser` | `:` | `browser:Chrome` | Browser name |
+| `device` | `:` | `device:Mobile` | Device type (Desktop / Mobile / Tablet) |
+| `model` | `:` | `model:iPhone 15` | Hardware model |
+| `platform` | `:` | `platform:ios` | Platform — `web`, `ios`, or `android` |
+| `country` | `:` | `country:US` | Visitor country (two-letter code) |
+| `duration` | `>` | `duration:>2m` | Session length is at least this long |
+
+<Info>
+Filters **combine with AND** — each chip you add narrows the result set further. There is no OR or "is not"; to explore an alternative, clear a chip and try the other value. Free-typed text that isn't a recognized `key:value` is treated as a search term.
+</Info>
+
+## Signals — `has:`
+
+The `has:` filter finds sessions that contain a specific experience signal. These are the moments worth watching: errors, frustration, and slow performance.
+
+| Value | Finds sessions with |
+| --- | --- |
+| `has:error` | A JavaScript / runtime error |
+| `has:rage` | A rage click (rapid repeated clicks on one spot) |
+| `has:dead click` | A dead click (a click that produced no response) |
+| `has:slow lcp` | A slow Largest Contentful Paint |
+| `has:long tasks` | Long main-thread tasks that blocked the UI |
+
+Values with spaces are typed exactly as shown — `has:dead click`, `has:slow lcp`, `has:long tasks`. Pick them from the dropdown to avoid typos.
+
+```text Examples
+has:error
+has:rage
+has:dead click
+```
+
+## Filter by user
+
+`user:` scopes the list to one identified person. Start typing an email or name and pick the match from the **Users** group — Replayfy then filters by that exact user.
+
+```text
+user:jenny@acme.io
+```
+
+<Note>
+When you **pick a user from the suggestions**, Replayfy matches that specific person precisely. If you type a user string by hand without selecting a suggestion, it falls back to a text match. Free-text search, a `page:` filter, and a hand-typed `user:` all share a single text slot — so combine at most one of them per query, and pick the user from the list when you also want a page filter in the same search.
+</Note>
+
+## Filter by page
+
+`page:` matches sessions that visited a given path. Paths come from your workspace's own traffic as you type.
+
+```text
+page:/checkout
+page:/settings/billing
+```
+
+A page value matches by substring, so `page:/checkout` finds every session that visited a URL containing `/checkout`.
+
+## Device, browser, platform & country
+
+These describe *where* a session happened. Browser, device, device model, and country values are drawn from what your workspace has actually recorded, so the dropdown only ever offers real values.
+
+<Tabs>
+  <Tab title="Browser">
+    ```text
+    browser:Chrome
+    browser:Safari
+    ```
+    Filter by browser name. Values are suggested from your recorded sessions.
+  </Tab>
+  <Tab title="Device & model">
+    ```text
+    device:Mobile
+    model:iPhone 15
+    ```
+    `device:` filters by the broad device **type** (Desktop, Mobile, Tablet); `model:` filters by the specific **hardware model**.
+  </Tab>
+  <Tab title="Platform">
+    ```text
+    platform:web
+    platform:ios
+    platform:android
+    ```
+    `platform:` is a fixed set — `web`, `ios`, or `android` — spanning your web and mobile SDKs.
+  </Tab>
+  <Tab title="Country">
+    ```text
+    country:US
+    country:GB
+    ```
+    Start typing a country name and pick it from the list; the applied filter uses the visitor's two-letter country code.
+  </Tab>
+</Tabs>
+
+## Duration
+
+`duration:` filters by session length and always uses the `>` operator — it's a **minimum**: `duration:>2m` returns sessions at least two minutes long. There's no upper bound or "equals".
+
+Values accept a number and a unit — `s` (seconds, the default), `m` (minutes), `h` (hours), or `ms` (milliseconds):
+
+```text
+duration:>30s
+duration:>1m
+duration:>5m
+```
+
+<Tip>
+Longer sessions often signal confusion or a user fighting the UI. Pair duration with a signal — `duration:>2m has:rage` — to surface the sessions most worth reviewing.
+</Tip>
+
+## Combine filters
+
+Stack chips to narrow in on exactly the sessions you want. Each filter is ANDed with the rest.
+
+<CodeGroup>
+```text Broken checkout on mobile Chrome
+page:/checkout has:error platform:web browser:Chrome
+```
+
+```text Frustrated long sessions
+has:rage duration:>2m
+```
+
+```text One user's error sessions
+user:jenny@acme.io has:error
+```
+
+```text Slow performance on iPhone
+platform:ios model:iPhone 15 has:slow lcp
+```
+</CodeGroup>
+
+Use the keyboard to move fast:
+
+| Key | Action |
+| --- | --- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Focus the search field |
+| <kbd>↑</kbd> <kbd>↓</kbd> | Move through suggestions |
+| <kbd>↵</kbd> | Apply the highlighted suggestion |
+| <kbd>Tab</kbd> | Accept the inline completion |
+| <kbd>Esc</kbd> | Close the dropdown |
+| <kbd>Backspace</kbd> (empty field) | Remove the last chip |
+
+To clear everything, use the **✕** at the end of the field.
+
+## Saved filters & recent searches
+
+The empty dropdown gives you two shortcuts:
+
+- **Suggested filters** — every filterable dimension, each with a worked example, so the grammar is legible without memorizing keys. Clicking one drops you into that filter.
+- **Saved filters** — ready-made starting points: **Has errors**, **Rage clicks**, and **Slow sessions**. Selecting one adds its chips to your current search.
+- **Recent searches** — your last few queries, stored per workspace **in this browser**. Selecting one re-runs it exactly, including a user filter's precise match.
+
+<Note>
+Recent searches are local to your browser and are cleared when you sign out, so a shared machine never leaks one account's customers into another's search box.
+</Note>
+
+## Scoped views
+
+Sometimes you arrive at Recordings already filtered — because you drilled in from somewhere else. In these cases the list is **scoped to a specific set of sessions** and a banner names the scope. Dismiss the banner to return to all recordings.
+
+| You came from | The list shows |
+| --- | --- |
+| A **playlist** in the sidebar | Only that playlist's recordings |
+| A **funnel step's** "View sessions" | The sessions that reached that step, within the analyzed date range |
+| An **incident's** "View sessions" | The sessions attributed to that incident |
+| An **issue's** "View sessions" | The sessions where that issue occurred |
+
+<Info>
+Scoped views and the search bar work together — a scope sets the starting set, and any filter chips you add narrow within it. Opening a recording keeps the scope, so the rail stays filtered while you review.
+</Info>
+
+Some links elsewhere in the app (for example, drilling in from a **Segments** band) open Recordings with filter chips already applied via a `?q=` link — the same chips you'd build by hand, pre-filled for you.
+
+<CardGroup cols={3}>
+  <Card title="Session replay" icon="clapperboard-play" href="/products/session-replay">
+    Everything you can see and do inside a recording.
+  </Card>
+  <Card title="Funnels" icon="filter" href="/products/funnels">
+    Build a funnel and drill from any step into the sessions behind it.
+  </Card>
+  <Card title="Crashlytics" icon="triangle-exclamation" href="/products/crashlytics">
+    Track errors, crashes, and freezes, then jump to the sessions where they happened.
+  </Card>
+</CardGroup>
