@@ -121,7 +121,7 @@ All methods are static on `Replay`. Most return `Future<void>`.
 
 | Method | Description |
 |---|---|
-| `Replay.identify(String distinctId, {Map<String, Object?> properties})` | Associate the session with a known user and set user properties. |
+| `Replay.identify(String distinctId, {Map<String, Object?> properties})` | Associate the session with a known user and set user properties — including a `picture` (alias `avatar`) https image URL used as the user's avatar in the dashboard. |
 | `Replay.track(String event, {Map<String, Object?> properties})` | Record a custom analytics event. |
 | `Replay.captureException(Object error, {StackTrace? stackTrace, bool handled})` | Capture a handled exception (`handled: true` by default). |
 | `Replay.trackInput(String label, String value, {bool masked})` | Record a text field's value; pass `masked: true` to drop it to `"***"`. |

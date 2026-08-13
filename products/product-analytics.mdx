@@ -22,7 +22,7 @@ Two SDK calls are the raw material for every analytic in Replayfy.
 
 ### identify() — who the user is
 
-Call `identify()` as soon as you know who someone is (typically right after login). Replayfy promotes `email`, `name`, and `plan` to first-class fields and keeps every other trait as a searchable property on the user.
+Call `identify()` as soon as you know who someone is (typically right after login). Replayfy promotes `email`, `name`, `plan`, and `picture` (the user's avatar URL, alias `avatar`) to first-class fields and keeps every other trait as a searchable property on the user.
 
 <CodeGroup>
 ```js Web
@@ -31,6 +31,7 @@ replay('identify', user.id, {
   email: user.email,
   name: user.name,
   plan: user.plan,            // "free" | "pro" | "team" | "enterprise"
+  picture: user.avatarUrl,    // public https image URL shown as the user's avatar
   signup_date: user.createdAt,
 });
 ```

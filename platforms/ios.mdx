@@ -81,6 +81,8 @@ pod 'Replayfy', '~> 0.0.3'
     Replay.identify("user_123", properties: ["email": "a@b.com", "plan": "pro"])
     Replay.track("purchase", properties: ["amount": 4200, "currency": "USD"])
     ```
+
+    A `properties["picture"]` (or its alias `["avatar"]`) set to a public `https` image URL becomes the user's avatar on the recording header and Users list — top-level or nested in `customProps`; non-URL values are ignored.
   </Step>
 </Steps>
 

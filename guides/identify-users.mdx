@@ -38,4 +38,13 @@ traits you want to filter and segment on (`email`, `name`, `plan`, …).
   </Tab>
 </Tabs>
 
-<Tip>`email`, `name`, and `plan` are promoted to first-class, filterable user fields on the dashboard. Any other trait is kept as searchable custom metadata.</Tip>
+<Tip>`email`, `name`, `plan`, and `picture` are promoted to first-class user fields on the dashboard — filterable, and `picture` renders as the user's avatar. Any other trait is kept as searchable custom metadata.</Tip>
+
+<Tip>**Avatar** — set `picture` (or its alias `avatar`) to a public **https** image URL to show the user's avatar on the recording header and the Users list. It works as a top-level trait or nested inside `customProps`, so every SDK supports it today with no upgrade; non-URL values are ignored.
+
+```ts
+replay.identify("user_123", { email: "ada@example.com", picture: "https://cdn.example.com/u/123.png" });
+// or, from any SDK, via custom properties:
+replay.identify("user_123", { customProps: { avatar: "https://cdn.example.com/u/123.png" } });
+```
+</Tip>

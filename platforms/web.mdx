@@ -64,6 +64,8 @@ replay.identify("user_123", { email: "ada@example.com", plan: "pro" });
 replay.track("checkout_started");
 ```
 
+Include `picture` (or its alias `avatar`) with a public `https` image URL — either top-level or inside `customProps` — to set the user's avatar in the recording header and Users list; non-URL values are ignored.
+
 With the script tag, the `Replayfy` global forwards the same API (`Replayfy.identify(...)`, `Replayfy.track(...)`) after `init()`, so you never have to hold onto the returned controller.
 
 </Step>

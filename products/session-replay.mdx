@@ -202,15 +202,18 @@ Out of the box, recordings are captured anonymously. Two SDK calls turn a raw
 session into one you can find and reason about.
 
 **`identify()`** attaches a user to the session. The distinct id, email, name,
-and plan surface on the recording row and header, and any extra traits land in
-the **Custom properties** tab — so you can later filter with `user:` or search
-for everyone on a given plan.
+and plan surface on the recording row and header — as does `picture` (or its
+alias `avatar`), a public https image URL shown as the user's avatar on the
+recording row and header — and any extra traits land in the **Custom
+properties** tab, so you can later filter with `user:` or search for everyone on
+a given plan.
 
 ```ts
 replay.identify("user_123", {
   email: "ada@example.com",
   name: "Ada Lovelace",
   plan: "pro",
+  picture: "https://cdn.example.com/u/123.png",
 });
 ```
 
