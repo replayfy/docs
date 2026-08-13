@@ -1,0 +1,121 @@
+---
+title: "Analytics"
+description: "A dedicated analytics workspace — build metric trends, measure retention, rank any dimension, and read Core Web Vitals, all from your real sessions and every number one click from the recordings behind it."
+---
+
+The **Analytics** section is Replayfy's dedicated analytical workspace. Where your **Overview** home page gives you Segments and Activity at a glance, Analytics is where you go to ask a specific question and shape the answer — a metric trend, a retention grid, a ranked breakdown, or your Core Web Vitals.
+
+Everything here runs on the **same sessions and events** the rest of Replayfy uses, computed live — there are no separate pipelines to configure and nothing is a placeholder. A brand-new workspace shows an install prompt until real sessions arrive.
+
+<CardGroup cols={2}>
+  <Card title="Trends" icon="chart-line" href="#trends">
+    Plot any metric over time, broken down by any dimension, compared to the prior period.
+  </Card>
+  <Card title="Retention" icon="table-cells" href="#retention">
+    A cohort grid showing what share of users come back, day by day or week by week.
+  </Card>
+  <Card title="Web Vitals" icon="gauge-high" href="#web-vitals">
+    LCP, INP, and CLS at the 75th percentile, per page, rated good / needs work / poor.
+  </Card>
+  <Card title="Breakdowns" icon="chart-bar" href="#breakdowns">
+    Rank any dimension — browser, country, device, path — by sessions or users.
+  </Card>
+  <Card title="Events" icon="bolt" href="#events">
+    Every tracked event with its volume, trend, and the properties it carries.
+  </Card>
+</CardGroup>
+
+<Note>
+Analytics reads the same real data as the Overview, but before any panel fetches it checks whether your workspace has recordings at all — so an empty workspace goes straight to an install prompt instead of a flash of empty charts.
+</Note>
+
+## Trends
+
+**Trends** is a query builder for time series. You pick one or more **series** — a metric to measure — and Replayfy plots them over your selected window.
+
+Each series has two parts:
+
+| Field | What it is |
+| --- | --- |
+| **Event** | What to measure — **Sessions** (the default), **Pageviews**, or any custom event you `track()`. |
+| **Measure** | How to count it — total count, unique users, or (for numeric event properties) a sum or average of a property. |
+
+Add more than one series to overlay several metrics on the same axes, then shape the query with the controls in the rail:
+
+- **Breakdown** — split the first series by a dimension (Platform, Browser, OS, Country, Device, Plan, and any dimension your events actually carry). Each value becomes a legend-toggled line.
+- **Granularity** — 5-minute, hourly, day, week, or month, whichever fits the range.
+- **Compare** — overlay the previous period as a faint second line to see whether the number is really up or down.
+- **Filters** — add any number of `dimension:value` rules to scope the whole query to matching sessions.
+
+<Tip>
+Sessions is the default series on purpose: it's the one metric every workspace has, including mobile-only apps that don't send pageviews. Switch to Pageviews or a `track()` event once you're instrumenting them.
+</Tip>
+
+## Retention
+
+**Retention** answers the question at the heart of growth: *do people come back?* It renders a cohort grid — one row per starting cohort, one column per period since — where each cell is the share of that cohort still active.
+
+- **Day / Week** — toggle whether a cohort is a day or a week of first-seen users. The toggle sits at the far right of the section.
+- **Return action** — by default a user "returns" by starting any session. Switch the action to a specific `track()` event to measure retention against a real milestone (e.g. came back and *fired `checkout_completed`*), not just any visit.
+
+The header reads the plain-language summary — "% returning by week since first session · N users" — and each row shades from dark (high retention) to light so the drop-off pattern reads at a glance.
+
+## Web Vitals
+
+**Web Vitals** surfaces the three [Core Web Vitals](https://web.dev/vitals/) Google ranks on, computed from your real web sessions:
+
+| Metric | Measures |
+| --- | --- |
+| **LCP** | Largest Contentful Paint — loading |
+| **INP** | Interaction to Next Paint — responsiveness |
+| **CLS** | Cumulative Layout Shift — visual stability |
+
+The headline is the **share of page views that pass** all three, weighted by page views, with the weakest metric called out. Below it, each page is listed with its **p75** (75th-percentile) value per metric, ranked worst-first, so you jump straight to the page hurting your scores.
+
+<Note>
+Core Web Vitals come from **web (browser) sessions only** — native app sessions don't report LCP / INP / CLS. Filter by device with the segmented control; a mobile-app-only workspace reads an honest empty state here rather than a blank chart.
+</Note>
+
+## Breakdowns
+
+**Breakdowns** takes a single dimension and ranks its values by a measure — the "which browsers / countries / pages drive my sessions?" question, as a first-class object rather than a footnote on another chart.
+
+<Steps>
+<Step title="Pick a dimension">
+Browser, Country, Device type, OS, URL path, Referrer, or Plan. Country values show the full name with a flag; browser values show the real browser logo.
+</Step>
+<Step title="Pick a measure">
+Rank by **Sessions** or **Users**. The headline reads the dimension, the period total, and which value leads with what share.
+</Step>
+<Step title="Read it as bars or a donut">
+Toggle between a ranked bar list and a donut lens; click any value to focus it.
+</Step>
+</Steps>
+
+## Events
+
+**Events** is the catalogue of everything you `track()`. Each row is one event name with its volume, a trend sparkline, and the count of distinct properties it carries — so you can see at a glance which events fire, how often, and whether their volume is moving.
+
+Selecting an event reveals the properties it sends and their values, which is exactly the vocabulary you'll reach for when building a Trends series, a funnel step, or a behavioral cohort.
+
+<Tip>
+Consistent, `snake_case`, past-tense event names pay off here: they keep the Events list short and make every downstream builder's autocomplete clean. See [Track custom events](/guides/track-events) for the conventions.
+</Tip>
+
+## Ask AI
+
+Every Analytics view sits next to **Replayfy AI**. Instead of building a query by hand you can ask in plain language — "how did signups trend last week by plan?" — and get an answer grounded in the same real data, with a link to the sessions behind it. See [Replayfy AI](/platform/replayfy-ai).
+
+## Related
+
+<CardGroup cols={3}>
+<Card title="Product Analytics" icon="chart-mixed" href="/products/product-analytics">
+The events model and the Overview's Segments + Activity.
+</Card>
+<Card title="Funnels" icon="filter" href="/products/funnels">
+Turn events into step-by-step conversion analysis.
+</Card>
+<Card title="Cohorts" icon="users" href="/products/cohorts">
+Group users by traits and behavior, then reuse them as filters.
+</Card>
+</CardGroup>

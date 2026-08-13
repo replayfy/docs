@@ -179,6 +179,24 @@ visitors are excluded, since they can't be de-duplicated across sessions). Call
 - **Metric** — just the headline conversion number, large, for a quick read or a
   pinned dashboard tile.
 
+### Filter the funnel's sessions
+
+Use **+ Add filter** to scope the whole funnel to a subset of sessions — "how does
+this flow convert for Chrome users on the Pro plan?" Every result, breakdown, and
+drop-off then reflects only the matching sessions.
+
+| Filter | How it works |
+| --- | --- |
+| **Browser · OS · Device · Plan** | Values autocomplete from what your workspace has actually sent, so the list covers whatever real browsers/devices your users are on — not a fixed set. |
+| **Country** | Pick from the full country list (shown with flags). |
+| **URL path · Referrer** | Free-text `contains` match on the landing URL or referrer. |
+| **Session duration** | A numeric comparison (`≥`, `>`, `≤`, `<`) against session length. |
+| **Error · Rage click · Dead click** | A single **is true** / **is false** choice — `is true` keeps sessions that had the signal, `is false` keeps sessions without it. |
+
+<Tip>
+Combine filters freely — they apply together (AND). To turn a filtered slice into a reusable group, build the same conditions as a [Cohort](/products/cohorts) and filter by that cohort everywhere.
+</Tip>
+
 ## Drop-off analysis
 
 The most valuable part of a funnel is *who left and why*. Every step is a doorway

@@ -8,18 +8,13 @@
   "favicon": "/favicon.svg",
   "logo": { "light": "/logo/light.svg", "dark": "/logo/dark.svg" },
   "navigation": {
-    "tabs": [
-      {
-        "tab": "Documentation",
-        "groups": [
-          { "group": "Get started", "pages": ["introduction", "quickstart"] },
-          { "group": "SDKs", "pages": ["platforms/web", "platforms/ios", "platforms/android", "platforms/react-native", "platforms/flutter"] },
-          { "group": "Products", "pages": ["products/session-replay", "products/product-analytics", "products/funnels", "products/cohorts", "products/crashlytics", "products/alerts"] },
-          { "group": "Platform", "pages": ["platform/replayfy-ai", "platform/ai-credits", "platform/integrations", "platform/api-and-keys", "platform/administration", "platform/workspaces-and-billing"] },
-          { "group": "Guides", "pages": ["guides/identify-users", "guides/track-events", "guides/search-and-filters", "guides/keyboard-shortcuts", "guides/privacy-and-masking"] },
-          { "group": "Help", "pages": ["support"] }
-        ]
-      }
+    "groups": [
+      { "group": "Get started", "pages": ["introduction", "quickstart"] },
+      { "group": "Install the SDK", "pages": ["platforms/web", "platforms/ios", "platforms/android", "platforms/react-native", "platforms/flutter"] },
+      { "group": "Products", "pages": ["products/session-replay", "products/product-analytics", "products/analytics", "products/funnels", "products/cohorts", "products/crashlytics", "products/alerts"] },
+      { "group": "Platform", "pages": ["platform/replayfy-ai", "platform/ai-credits", "platform/integrations", "platform/api-and-keys", "platform/administration", "platform/workspaces-and-billing"] },
+      { "group": "Guides", "pages": ["guides/identify-users", "guides/track-events", "guides/search-and-filters", "guides/keyboard-shortcuts", "guides/privacy-and-masking"] },
+      { "group": "Help", "pages": ["support"] }
     ]
   },
   "navbar": {
