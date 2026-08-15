@@ -221,8 +221,20 @@ replay.track("checkout_started", { cartValue: 84.0 });
 ```
 
 ```html CDN
-<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+<!-- Async, non-blocking loader — queues the calls below until the SDK is ready. -->
 <script>
+  !(function () {
+    var r = (window.Replayfy = window.Replayfy || []);
+    ['init', 'identify', 'track', 'captureException', 'flush', 'stop'].forEach(function (m) {
+      r[m] = function () { r.push([m].concat([].slice.call(arguments))); };
+    });
+    var s = document.createElement('script');
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.src = 'https://cdn.replayfy.app/v1/replay.global.js';
+    var f = document.getElementsByTagName('script')[0];
+    f.parentNode.insertBefore(s, f);
+  })();
   Replayfy.init({
     apiKey: "rpl_pk_YOUR_KEY",
     apiHost: "https://us.replayfy.app",

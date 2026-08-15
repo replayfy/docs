@@ -14,8 +14,22 @@ npm install @replayfyapp/browser
 ```
 
 ```html Script tag
-<!-- Self-contained bundle — exposes a global `Replayfy` -->
-<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+<!-- Async, non-blocking loader — exposes a global `Replayfy` and queues
+     init/track calls until the self-contained bundle arrives. -->
+<script>
+  !(function () {
+    var r = (window.Replayfy = window.Replayfy || []);
+    ['init', 'identify', 'track', 'captureException', 'flush', 'stop'].forEach(function (m) {
+      r[m] = function () { r.push([m].concat([].slice.call(arguments))); };
+    });
+    var s = document.createElement('script');
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.src = 'https://cdn.replayfy.app/v1/replay.global.js';
+    var f = document.getElementsByTagName('script')[0];
+    f.parentNode.insertBefore(s, f);
+  })();
+</script>
 ```
 
 </CodeGroup>
@@ -40,7 +54,8 @@ const replay = initReplay({
 ```
 
 ```html Script tag
-<script src="https://cdn.replayfy.app/v1/replay.global.js"></script>
+<!-- The async loader from the Install step already put `Replayfy` on the page
+     and queues this call until the bundle is ready. -->
 <script>
   Replayfy.init({
     apiKey: "rpl_pk_YOUR_KEY",
@@ -52,6 +67,20 @@ const replay = initReplay({
 </CodeGroup>
 
 `init()` is idempotent — a second call returns the live session instead of starting a second recording.
+
+<Note>
+  **Why the loader looks like this.** Loading the bundle with `async` means it
+  never blocks your page from rendering, and the small inline stub queues any
+  `init`/`track` calls made before the bundle finishes downloading (they replay
+  in order once it does). The `crossorigin="anonymous"` attribute is what lets
+  the browser hand Replayfy a **full error stack trace** instead of a bare
+  `"Script error."` — without it, the browser's cross-origin security model
+  strips the message, file, and stack from any error thrown by a script served
+  from another origin (the CDN). Replayfy's CDN sends the matching
+  `Access-Control-Allow-Origin` header, so the two work together. If you self-host
+  the bundle on a host that does **not** send that header, drop the `crossorigin`
+  line — otherwise the browser will refuse to load the script.
+</Note>
 
 </Step>
 
