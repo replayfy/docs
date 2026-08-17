@@ -14,9 +14,15 @@ Turn on `maskAllInputs` (on by default on web) to redact the value of every inpu
 
 <Tabs>
   <Tab title="Web">
-    ```ts
+    <CodeGroup>
+    ```ts npm
     initReplay({ apiKey: "rpl_pk_YOUR_KEY", maskAllInputs: true });
     ```
+
+    ```js Script tag
+    Replayfy.init({ apiKey: "rpl_pk_YOUR_KEY", maskAllInputs: true });
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="iOS">
     ```swift

@@ -220,7 +220,8 @@ recording row and header — and any extra traits land in the **Custom
 properties** tab, so you can later filter with `user:` or search for everyone on
 a given plan.
 
-```ts
+<CodeGroup>
+```ts npm
 replay.identify("user_123", {
   email: "ada@example.com",
   name: "Ada Lovelace",
@@ -229,20 +230,38 @@ replay.identify("user_123", {
 });
 ```
 
+```js Script tag
+Replayfy.identify("user_123", {
+  email: "ada@example.com",
+  name: "Ada Lovelace",
+  plan: "pro",
+  picture: "https://cdn.example.com/u/123.png",
+});
+```
+</CodeGroup>
+
 **`track()`** drops a named product event onto the session timeline, where it
 becomes a marker on the scrubber and a row in the Events panel. Use stable event
 names (no spaces) so the same events power your [funnels](/products/funnels) and
 segments.
 
-```ts
+<CodeGroup>
+```ts npm
 replay.track("checkout_started");
 replay.track("plan_upgraded", { from: "free", to: "pro" });
 ```
 
+```js Script tag
+Replayfy.track("checkout_started");
+Replayfy.track("plan_upgraded", { from: "free", to: "pro" });
+```
+</CodeGroup>
+
 <Tip>
-Caught an error you want to see in context? `replay.captureException(err)` pins
-it to the session timeline and promotes it to a first-class issue with its name,
-message, and parsed stack.
+Caught an error you want to see in context? `captureException(err)` — on your
+`initReplay()` controller, or `Replayfy.captureException(err)` with the script tag —
+pins it to the session timeline and promotes it to a first-class issue with its
+name, message, and parsed stack.
 </Tip>
 
 ## Share a recording

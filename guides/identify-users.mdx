@@ -8,13 +8,17 @@ session before and after links to that user, and earlier anonymous sessions are
 associated retroactively. Pass a stable `distinctId` (your own user id) plus any
 traits you want to filter and segment on (`email`, `name`, `plan`, …).
 
-<Note>Web snippets assume `replay` is the value returned by `initReplay()`. With the CDN `<script>` build, call `Replayfy.identify(...)` instead.</Note>
-
 <Tabs>
   <Tab title="Web">
-    ```ts
+    <CodeGroup>
+    ```ts npm
     replay.identify("user_123", { email: "ada@example.com", plan: "pro" });
     ```
+
+    ```js Script tag
+    Replayfy.identify("user_123", { email: "ada@example.com", plan: "pro" });
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="iOS">
     ```swift
@@ -44,8 +48,16 @@ traits you want to filter and segment on (`email`, `name`, `plan`, …).
 **Avatar** — set `picture` (or its alias `avatar`) to a public **https** image URL to show the user's avatar on the recording header and the Users list. It works as a top-level trait or nested inside `customProps`, so every SDK supports it today with no upgrade; non-URL values are ignored.
 </Tip>
 
-```ts
+<CodeGroup>
+```ts npm
 replay.identify("user_123", { email: "ada@example.com", picture: "https://cdn.example.com/u/123.png" });
 // or, from any SDK, via custom properties:
 replay.identify("user_123", { customProps: { avatar: "https://cdn.example.com/u/123.png" } });
 ```
+
+```js Script tag
+Replayfy.identify("user_123", { email: "ada@example.com", picture: "https://cdn.example.com/u/123.png" });
+// or, from any SDK, via custom properties:
+Replayfy.identify("user_123", { customProps: { avatar: "https://cdn.example.com/u/123.png" } });
+```
+</CodeGroup>

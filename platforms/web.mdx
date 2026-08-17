@@ -88,14 +88,19 @@ const replay = initReplay({
 
 Attach a distinct id and traits so replays and events are tied to a real person.
 
-```ts
+<CodeGroup>
+```ts npm
 replay.identify("user_123", { email: "ada@example.com", plan: "pro" });
 replay.track("checkout_started");
 ```
 
-Include `picture` (or its alias `avatar`) with a public `https` image URL — either top-level or inside `customProps` — to set the user's avatar in the recording header and Users list; non-URL values are ignored.
+```js Script tag
+Replayfy.identify("user_123", { email: "ada@example.com", plan: "pro" });
+Replayfy.track("checkout_started");
+```
+</CodeGroup>
 
-With the script tag, the `Replayfy` global forwards the same API (`Replayfy.identify(...)`, `Replayfy.track(...)`) after `init()`, so you never have to hold onto the returned controller.
+Include `picture` (or its alias `avatar`) with a public `https` image URL — either top-level or inside `customProps` — to set the user's avatar in the recording header and Users list; non-URL values are ignored. With the script tag you call these on the `Replayfy` global (no returned controller to hold).
 
 </Step>
 
@@ -158,7 +163,8 @@ Privacy, capture, and sampling settings configured in your Replayfy **dashboard 
 | `stop` | `stop(): Promise<void>` | Stop all capture, end the session, and flush the final batch. |
 | `sessionId` | `sessionId: string` | The current session's id, handy for correlating with your own logs. |
 
-```ts
+<CodeGroup>
+```ts npm
 // handled error
 try {
   risky();
@@ -173,6 +179,23 @@ await replay.flush();
 await replay.stop();
 console.log(replay.sessionId);
 ```
+
+```js Script tag
+// handled error
+try {
+  risky();
+} catch (e) {
+  Replayfy.captureException(e);
+}
+
+// fatal error
+Replayfy.captureException(new Error("boom"), { handled: false });
+
+await Replayfy.flush();
+await Replayfy.stop();
+console.log(Replayfy.sessionId);
+```
+</CodeGroup>
 
 ## Privacy & masking
 
@@ -197,7 +220,8 @@ Replayfy is designed to keep sensitive data in the browser — **every `<input>`
 <div class="rpf-block"><!-- third-party chat widget --></div>
 ```
 
-```ts
+<CodeGroup>
+```ts npm
 initReplay({
   apiKey: "rpl_pk_YOUR_KEY",
   apiHost: "https://us.replayfy.app",
@@ -207,6 +231,18 @@ initReplay({
   redactUrls: [/\/reset-password\/[^/]+/],
 });
 ```
+
+```js Script tag
+Replayfy.init({
+  apiKey: "rpl_pk_YOUR_KEY",
+  apiHost: "https://us.replayfy.app",
+  maskAllInputs: true,
+  maskTextSelector: ".rpf-mask",
+  blockSelector: ".rpf-block",
+  redactUrls: [/\/reset-password\/[^/]+/],
+});
+```
+</CodeGroup>
 
 <Note>
 For full control, `beforeSend` receives each batch before it leaves the browser, so you can drop or scrub anything programmatically.
