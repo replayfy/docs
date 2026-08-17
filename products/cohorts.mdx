@@ -58,9 +58,9 @@ Attribute and behavioral rules only work if your SDK is sending the underlying s
 
 <CodeGroup>
 ```ts Web (npm)
-import Replay from "@replayfyapp/browser";
+import { initReplay } from "@replayfyapp/browser";
 
-const replay = Replay.init({
+const replay = initReplay({
   apiKey: "rpl_pk_YOUR_KEY",          // publishable key — safe to ship
   apiHost: "https://us.replayfy.app", // your ingest host
 });
@@ -77,15 +77,11 @@ replay.track("payment_success", { amount: 4900, currency: "usd" });
 ```
 
 ```html Web (CDN)
-<script src="https://us.replayfy.app/sdk/replay.js"></script>
+<!-- Once the async loader from Web setup has put the `Replayfy` global on the
+     page, the same methods are available on it (no returned controller to hold). -->
 <script>
-  Replay.init({
-    apiKey: "rpl_pk_YOUR_KEY",
-    apiHost: "https://us.replayfy.app",
-  });
-
-  Replay.identify("user_8f21", { email: "ada@acme.com", plan: "Pro" });
-  Replay.track("payment_success", { amount: 4900, currency: "usd" });
+  Replayfy.identify("user_8f21", { email: "ada@acme.com", plan: "Pro" });
+  Replayfy.track("payment_success", { amount: 4900, currency: "usd" });
 </script>
 ```
 </CodeGroup>

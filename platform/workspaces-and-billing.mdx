@@ -19,9 +19,9 @@ Point your SDK at the workspace by its `apiKey` and your ingest `apiHost`:
 
 <CodeGroup>
 ```ts Web SDK
-import Replayfy from "@replayfyapp/browser";
+import { initReplay } from "@replayfyapp/browser";
 
-Replayfy.init({
+initReplay({
   apiKey: "rpl_pk_YOUR_KEY",          // this workspace's publishable key
   apiHost: "https://us.replayfy.app", // your ingest host
 });

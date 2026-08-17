@@ -7,6 +7,8 @@ Track the moments that matter — signups, purchases, feature usage. Events driv
 funnels and let you jump straight to the sessions where they happened. Use stable,
 lowercase names (`checkout_started`, `purchase`) so they stay searchable.
 
+<Note>Web snippets assume `replay` is the value returned by `initReplay()`. With the CDN `<script>` build, call `Replayfy.track(...)` instead.</Note>
+
 <Tabs>
   <Tab title="Web">
     ```ts
