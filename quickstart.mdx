@@ -97,13 +97,10 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
   <Tab title="Android">
     <Steps>
       <Step title="Install">
-        Add JitPack to `settings.gradle.kts`, then the dependency:
+        Add the dependency — it resolves from Maven Central, so no extra repository is needed (`mavenCentral()` is already in the default Android template):
         ```kotlin
-        // settings.gradle.kts → dependencyResolutionManagement { repositories { … } }
-        maven { url = uri("https://jitpack.io") }
-
         // app/build.gradle.kts
-        implementation("com.github.replayfy:android-sdk:0.0.3")
+        implementation("app.replayfy:android-sdk:0.0.3")
         ```
       </Step>
       <Step title="Initialize">
