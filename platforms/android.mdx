@@ -7,7 +7,7 @@ Record real user sessions, fire analytics events, and capture crashes from your 
 
 ## Install
 
-Add the JitPack repository, then the dependency.
+The SDK resolves from **Maven Central**. Most Android projects already have `google()` and `mavenCentral()` in their repositories — if so, skip straight to the dependency. JitPack stays available as a fallback for versions published before Maven Central.
 
 <CodeGroup>
 
@@ -16,7 +16,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
+        // Fallback only (pre–Maven Central pins):
+        // maven { url = uri("https://jitpack.io") }
     }
 }
 ```
@@ -26,7 +27,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        // Fallback only (pre–Maven Central pins):
+        // maven { url 'https://jitpack.io' }
     }
 }
 ```
@@ -39,13 +41,13 @@ Then add the dependency to your app module:
 
 ```kotlin build.gradle.kts
 dependencies {
-    implementation("com.github.replayfy:android-sdk:0.0.3")
+    implementation("app.replayfy:android-sdk:0.0.3")
 }
 ```
 
 ```groovy build.gradle
 dependencies {
-    implementation 'com.github.replayfy:android-sdk:0.0.3'
+    implementation 'app.replayfy:android-sdk:0.0.3'
 }
 ```
 

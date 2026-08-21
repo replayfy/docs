@@ -15,23 +15,13 @@ flutter pub add replayfy_flutter
 
 ```yaml pubspec.yaml
 dependencies:
-  replayfy_flutter: ^0.0.4
+  replayfy_flutter: ^0.0.6
 ```
 
 </CodeGroup>
 
 <Note>
-  **Android** — the native recording engine is distributed through JitPack. Add its repository to your app's `android/settings.gradle` so Gradle can resolve the transitive native SDK.
-
-  ```gradle android/settings.gradle
-  dependencyResolutionManagement {
-    repositories {
-      google()
-      mavenCentral()
-      maven { url 'https://jitpack.io' }
-    }
-  }
-  ```
+  **Android** — the native recording engine resolves automatically from **Maven Central** (`mavenCentral()` is already in the default Flutter Android template), so no repository configuration is needed. If you pin a pre–Maven Central version, add `maven { url 'https://jitpack.io' }` to your app's `android/settings.gradle` as a fallback.
 
   **iOS** — requires a deployment target of **iOS 15** or higher.
 </Note>

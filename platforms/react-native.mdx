@@ -28,17 +28,7 @@ cd ios && pod install
 React Native links the native module automatically. Rebuild the app (`npx react-native run-ios` / `run-android`) so the native module is bundled.
 
 <Note>
-**Android (JitPack).** The native Android engine is distributed through JitPack. If your app uses Gradle's centralized repositories (a `dependencyResolutionManagement` block in `android/settings.gradle`), add JitPack there so the transitive native SDK resolves:
-
-```gradle android/settings.gradle
-dependencyResolutionManagement {
-  repositories {
-    google()
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
-  }
-}
-```
+**Android.** The native Android engine resolves automatically from **Maven Central** — no repository configuration is needed (`mavenCentral()` is already in the standard React Native Android template). If you pin a pre–Maven Central version, add `maven { url 'https://jitpack.io' }` to your app's `android/settings.gradle` as a fallback.
 </Note>
 
 ## Initialize
