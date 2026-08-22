@@ -15,7 +15,7 @@ flutter pub add replayfy_flutter
 
 ```yaml pubspec.yaml
 dependencies:
-  replayfy_flutter: ^0.0.6
+  replayfy_flutter: ^0.0.7
 ```
 
 </CodeGroup>
@@ -121,6 +121,9 @@ All methods are static on `Replay`. Most return `Future<void>`.
 | Method | Description |
 |---|---|
 | `Replay.tagScreenName(String name)` | Manually tag the current screen. |
+| `Replay.excludeScreen(String name)` | Exclude a screen from frame capture **by name** (case-insensitive; matched against the tagged / auto-tagged screen name). While it's foreground the screenshot loop pauses — taps, network, and console keep flowing — and resumes on the next non-excluded screen. Distinct from `occludeSensitiveScreen`, which records but blanks the frame. |
+| `Replay.unexcludeScreen(String name)` | Stop excluding a screen — frame capture resumes next time it's shown. |
+| `Replay.setExcludedScreens(List<String> names)` | Replace the entire excluded-screens list in one call. |
 | `Replay.addTagWithProperties(String tag, {Map<String, Object?> properties})` | Add a tag with arbitrary properties. |
 | `Replay.setUserProperty(String key, Object? value)` | Set a property that sticks to the user. |
 | `Replay.setSessionProperty(String key, Object? value)` | Set a property scoped to this session only. |
@@ -134,8 +137,9 @@ All methods are static on `Replay`. Most return `Future<void>`.
 | Method | Description |
 |---|---|
 | `Replay.setAutomaticScreenNameTagging(bool enabled)` | Toggle automatic screen tagging at runtime. |
-| `Replay.setMultiSessionRecord(bool enabled)` | Enable recording across multiple sessions. |
-| `Replay.allowShortBreakForAnotherApp(bool allowed)` | Keep the session alive during a brief switch to another app. |
+| `Replay.enableAdvancedGestureRecognizer(bool enabled)` | Additionally capture **pinch** and **rotate** gestures, on top of the always-on tap / swipe / long-press. Off by default. |
+| `Replay.setMultiSessionRecord(bool enabled)` | Record multiple sessions per app launch (default), or only one — when disabled, the current/next session records and then no further sessions open this process. |
+| `Replay.allowShortBreakForAnotherApp(bool allow, {int breakWindowMs = 30000})` | Keep the **same** session across a brief switch to another app — a background gap up to `breakWindowMs` resumes the session; a longer gap starts a fresh session on return. |
 | `Replay.setAppVersion(String version, {String build})` | Set the app version and build number. |
 | `Replay.setPushNotificationToken(String token, {String platform})` | Register a push token (e.g. `platform: 'fcm'`). |
 

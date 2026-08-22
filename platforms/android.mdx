@@ -41,13 +41,13 @@ Then add the dependency to your app module:
 
 ```kotlin build.gradle.kts
 dependencies {
-    implementation("app.replayfy:android-sdk:0.0.3")
+    implementation("app.replayfy:android-sdk:0.0.4")
 }
 ```
 
 ```groovy build.gradle
 dependencies {
-    implementation 'app.replayfy:android-sdk:0.0.3'
+    implementation 'app.replayfy:android-sdk:0.0.4'
 }
 ```
 
@@ -124,6 +124,7 @@ Only `apiKey` and `apiHost` are required; every other option has a sensible defa
 | `snapshotIntervalMs` | `Long` | `500` | Screen-capture cadence (~2 FPS); floored at 200 ms. |
 | `autoScreenName` | `Boolean` | `true` | Auto-name the current screen from each Activity's class name. |
 | `useRemoteConfig` | `Boolean` | `true` | Let dashboard settings override these values at runtime (your values act as cold-start fallbacks; ~15-minute refresh). |
+| `excludedScreens` | `List<String>` | `emptyList()` | Screen names whose frame capture is paused while they're foreground (see [Screen tracking](#screen-tracking)). Case-insensitive; taps, network, and console still record. Mutable at runtime via `Replay.excludeScreen`/`setExcludedScreens`. |
 
 ## API reference
 
@@ -157,6 +158,28 @@ All methods are exposed on the `Replay` singleton and are static-callable from K
 | `tagScreenName(name)` | Manually set the current screen name. |
 | `addObservedView(view, screenName, viewName?)` | Track a Compose/custom view as a screen (emits on attach/detach). |
 | `setAutomaticScreenNameTagging(enabled)` | Toggle Activity-based auto screen naming at runtime. |
+| `excludeScreen(name)` | Exclude a screen from frame capture **by name** (case-insensitive; matched against the tagged / auto-tagged screen name). While it's foreground the screenshot loop pauses — taps, network, console, and performance events keep flowing — and resumes on the next non-excluded screen. |
+| `unexcludeScreen(name)` | Stop excluding a screen — frame capture resumes next time it's shown. |
+| `setExcludedScreens(names)` | Replace the entire excluded-screens list in one call. |
+
+Exclusion is **distinct from `occludeSensitiveScreen(true)`** — that keeps recording but blanks the frame, whereas an excluded screen captures no frames at all. Seed the list at init, or manage it at runtime:
+
+```kotlin
+// Seed at init:
+Replay.init(
+    this,
+    ReplayConfig(
+        apiKey = "rpl_pk_YOUR_KEY",
+        apiHost = "https://us.replayfy.app",
+        excludedScreens = listOf("Paywall", "PinEntry"),
+    ),
+)
+
+// …or manage at runtime:
+Replay.excludeScreen("Paywall")               // pause frames while "Paywall" is foreground
+Replay.unexcludeScreen("Paywall")             // resume
+Replay.setExcludedScreens(listOf("PinEntry", "CardScanner"))
+```
 
 ### Text input tracking
 
@@ -188,7 +211,10 @@ val client = OkHttpClient.Builder()
 | `startNewSession()` | Force-end the current session and start a new one (logout/login, re-bucketing). |
 | `stop()` | End the current session and flush the buffered batch. The next foregrounding starts a fresh session. |
 | `stopApplicationAndUploadData(timeoutMs?)` | Stop and block (up to `timeoutMs`, default 5000) until the batch is uploaded or persisted. |
-| `enableAdvancedGestureRecognizer(enabled)` | Capture long-press, swipe, and pinch in addition to taps (off by default). |
+| `cancelSession()` | Discard the current session **without uploading** — clears the in-memory buffer and deletes any on-disk batches still queued, so the server drops whatever already streamed. A fresh session can start afterward. Contrast with `stop()`, which ends the session gracefully and uploads. |
+| `enableAdvancedGestureRecognizer(enabled)` | Capture pinch and rotate gestures in addition to the always-on tap / swipe / long-press (off by default). |
+| `allowShortBreakForAnotherApp(allow, breakWindowMs?)` | Keep the **same** session across a brief switch to another app — a background gap up to `breakWindowMs` (default `30000`) resumes the session; a longer gap starts a fresh session on return. |
+| `setMultiSessionRecord(enabled)` | Record multiple sessions per app launch (default `true`), or only one — when `false`, the current/next session records and then no further sessions fire this process. |
 | `addVerificationListener(listener)` / `removeVerificationListener(listener)` | Fire a callback after the first successful upload. |
 
 ## Privacy & masking

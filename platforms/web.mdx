@@ -142,12 +142,17 @@ Pass these options to `initReplay(config)` (npm) or `Replayfy.init(config)` (CDN
 | `maskTextSelector` | `string` | — | CSS selector for text nodes to mask in the replay. |
 | `blockSelector` | `string` | — | CSS selector for elements to fully block (rendered as a placeholder). |
 | `redactUrls` | `Array<string \| RegExp>` | — | Patterns whose matches are stripped from captured URLs. |
+| `excludeUrls` | `string[]` | — | "Don't record this page" — a deny-list of URL **path globs** (`*` matches within a path segment, `**` matches across segments), e.g. `["/settings/billing", "/admin/**"]`. A matching page records nothing and ships nothing. |
 | `sdk` | `object` | — | Override SDK descriptor fields (name/version) reported with each batch. |
 | `beforeSend` | `(event) => event \| null` | — | Inspect or mutate each batch before it's sent; return `null` to drop it. |
 | `fetchImpl` | `typeof fetch` | `window.fetch` | Custom `fetch` implementation (advanced/testing). |
 
 <Note>
 Privacy, capture, and sampling settings configured in your Replayfy **dashboard are fetched at startup and take precedence over the values passed to `init()`** — so you can tighten masking or pause recording without shipping a new build.
+</Note>
+
+<Note>
+Auto-captured clicks are now labelled with the element's **real text** — its `aria-label`, `title`, associated form-control label, or trimmed visible caption — instead of a raw CSS selector, so heatmaps and click funnels read as human-friendly names (an input's typed value is never used as a label).
 </Note>
 
 ## API reference
@@ -162,6 +167,7 @@ Privacy, capture, and sampling settings configured in your Replayfy **dashboard 
 | `flush` | `flush(): Promise<void>` | Send any buffered events immediately. |
 | `stop` | `stop(): Promise<void>` | Stop all capture, end the session, and flush the final batch. |
 | `sessionId` | `sessionId: string` | The current session's id, handy for correlating with your own logs. |
+| `urlForCurrentSession` | `urlForCurrentSession(): string \| null` | The dashboard deep link for the current session — `<app-host>/recordings/<id>`, with the app host derived from `apiHost`. Returns `null` before a session has started. This is the private, authenticated dashboard view, not a public share link. |
 
 <CodeGroup>
 ```ts npm
@@ -178,6 +184,7 @@ replay.captureException(new Error("boom"), { handled: false });
 await replay.flush();
 await replay.stop();
 console.log(replay.sessionId);
+console.log(replay.urlForCurrentSession()); // → https://app.replayfy.app/recordings/<id> (or null)
 ```
 
 ```js Script tag
@@ -194,6 +201,7 @@ Replayfy.captureException(new Error("boom"), { handled: false });
 await Replayfy.flush();
 await Replayfy.stop();
 console.log(Replayfy.sessionId);
+console.log(Replayfy.urlForCurrentSession()); // → https://app.replayfy.app/recordings/<id> (or null)
 ```
 </CodeGroup>
 
@@ -205,6 +213,7 @@ Replayfy is designed to keep sensitive data in the browser — **every `<input>`
 - **`maskTextSelector`** — CSS selector for text nodes to mask (e.g. `.pii, .account-number`), shown as `●●●●` in playback.
 - **`blockSelector`** — CSS selector for elements to block entirely; they render as a placeholder box.
 - **`redactUrls`** — string/`RegExp` patterns stripped from captured URLs, so tokens and ids never leave the page.
+- **`excludeUrls`** — path globs for whole pages that must never be recorded (e.g. `["/settings/billing", "/admin/**"]`); a matching page captures and ships nothing at all.
 - **`captureHeaders`** (default `false`) — headers are only captured when explicitly enabled.
 - **`redactHeaderNames`** — additional header names whose values are masked, on top of the always-on built-in deny-list.
 - **`maxBodyBytes`** — caps how much of a request/response body is ever captured.

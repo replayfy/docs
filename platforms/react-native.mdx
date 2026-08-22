@@ -132,6 +132,9 @@ Reach the client through the default export (`Replay`), or `getClient()`.
 | `stop` | `stop()` | Stop recording, flush, and detach the JS observers. |
 | `screen` | `screen(name)` | Set the current screen name. |
 | `trackScreens` | `trackScreens(navigationRef)` | Automatic screen tracking for React Navigation. |
+| `excludeScreen` | `excludeScreen(name)` | Exclude a screen from frame capture **by name** (case-insensitive; matched against the tagged / auto-tagged screen name). While it's foreground the screenshot loop pauses — taps, network, console, and performance events keep flowing — and resumes on the next non-excluded screen. Distinct from `occludeSensitiveScreen`, which records but blanks the frame. |
+| `unexcludeScreen` | `unexcludeScreen(name)` | Stop excluding a screen — frame capture resumes next time it's shown. |
+| `setExcludedScreens` | `setExcludedScreens(names)` | Replace the entire excluded-screens list in one call. |
 | `trackInput` | `trackInput(label, value, masked?)` | Record a `TextInput` value from `onEndEditing`; `masked: true` drops the value (`"***"`). |
 | `setUserProperty` | `setUserProperty(key, value)` | Set a sticky, user-level property. |
 | `setSessionProperty` | `setSessionProperty(key, value)` | Set a property for this session only. |
@@ -140,7 +143,10 @@ Reach the client through the default export (`Replay`), or `getClient()`.
 | `pauseRecording` | `pauseRecording()` | Pause capture. |
 | `resumeRecording` | `resumeRecording()` | Resume capture. |
 | `startNewSession` | `startNewSession()` | End the current session and begin a new one. |
-| `cancelSession` | `cancelSession()` | Discard the current session without uploading. |
+| `cancelSession` | `cancelSession()` | Discard the current session **without uploading** — the server drops whatever already streamed, and a fresh session can start afterward. |
+| `enableAdvancedGestureRecognizer` | `enableAdvancedGestureRecognizer(enabled)` | Additionally capture **pinch** and **rotate** gestures, on top of the always-on tap / swipe / long-press. Off by default. |
+| `allowShortBreakForAnotherApp` | `allowShortBreakForAnotherApp(allow, breakWindowMs?)` | Keep the **same** session across a brief switch to another app — a background gap up to `breakWindowMs` (default `30000`) resumes the session; a longer gap starts a fresh session on return. |
+| `setMultiSessionRecord` | `setMultiSessionRecord(enabled)` | Record multiple sessions per app launch (default), or only one — when disabled, the current/next session records and then no further sessions open this process. |
 | `isRecording` | `isRecording(): Promise<boolean>` | Whether the SDK is currently recording. |
 | `getSessionId` | `getSessionId(): Promise<string>` | The current session id. |
 | `urlForCurrentSession` | `urlForCurrentSession(): Promise<string>` | Deep link to the current session. |

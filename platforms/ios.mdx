@@ -13,10 +13,10 @@ The module you import is always `Replay`, regardless of installer.
 
 ```swift Swift Package Manager
 // File → Add Package Dependencies…
-// https://github.com/replayfy/ios-sdk  (from 0.0.3)
+// https://github.com/replayfy/ios-sdk  (from 0.0.4)
 
 dependencies: [
-    .package(url: "https://github.com/replayfy/ios-sdk.git", from: "0.0.3")
+    .package(url: "https://github.com/replayfy/ios-sdk.git", from: "0.0.4")
 ],
 targets: [
     .target(
@@ -31,7 +31,7 @@ targets: [
 ```
 
 ```ruby CocoaPods
-pod 'Replayfy', '~> 0.0.3'
+pod 'Replayfy', '~> 0.0.4'
 ```
 
 </CodeGroup>
@@ -119,6 +119,7 @@ Only `apiKey` and `apiHost` are required. Pass any subset to `ReplayConfig(...)`
 | `autoScreenName` | `Bool` | `true` | Auto-detect the current screen from the foreground view controller. |
 | `useRemoteConfig` | `Bool` | `true` | Let dashboard settings override these values at runtime. |
 | `captureTouch` | `Bool` | `true` | Capture taps natively (disable only for host-driven capture such as Flutter). |
+| `excludedScreens` | `[String]` | `[]` | Screen names whose frame capture is paused while they're foreground (see [Screens](#screens)). Case-insensitive; taps, network, and console still record. Mutable at runtime via `Replay.excludeScreen`/`setExcludedScreens`. |
 
 ## API reference
 
@@ -135,6 +136,10 @@ All methods are static on the `Replay` type.
 | `Replay.resumeRecording()` | Resume screen capture. |
 | `Replay.startNewSession()` | Force a new logical session (e.g. after logout → login). |
 | `Replay.stopApplicationAndUploadData(timeoutSeconds:)` | Stop recording and block up to `timeoutSeconds` until the buffer flushes. |
+| `Replay.cancelSession()` | Discard the current session **without uploading** — clears the in-memory buffer and deletes any on-disk batches still queued, so the server drops whatever already streamed. A fresh session can start afterward. Contrast with `stop()`, which ends the session gracefully and uploads. |
+| `Replay.enableAdvancedGestureRecognizer(_:)` | Additionally capture **pinch** and **rotate** gestures, on top of the always-on tap / swipe / long-press. Off by default. |
+| `Replay.allowShortBreakForAnotherApp(_:windowSeconds:)` | Keep the **same** session across a brief switch to another app — a background gap up to `windowSeconds` (default `30`) resumes the session; a longer gap starts a fresh session on return. |
+| `Replay.setMultiSessionRecord(_:)` | Record multiple sessions per app launch (default `true`), or only one — when `false`, the current/next session records and then no further sessions open this process. |
 
 ### Identify & analytics
 
@@ -163,6 +168,25 @@ Uncaught exceptions and crashes are captured automatically when `captureErrors` 
 |---|---|
 | `Replay.tagScreenName(_:)` | Manually set the current screen name (overrides the auto-tagger). |
 | `Replay.setAutomaticScreenNameTagging(_:)` | Toggle the automatic screen-name tagger at runtime. |
+| `Replay.excludeScreen(_:)` | Exclude a screen from frame capture **by name** (case-insensitive; matched against the tagged / auto-tagged screen name). While that screen is foreground the periodic screenshot loop pauses — taps, network, console, and performance events keep flowing — and resumes on the next non-excluded screen. |
+| `Replay.unexcludeScreen(_:)` | Stop excluding a screen — frame capture resumes next time it's shown. |
+| `Replay.setExcludedScreens(_:)` | Replace the entire excluded-screens list in one call. |
+
+Exclusion is **distinct from `occludeSensitiveScreen(_:)`** — that keeps recording but blanks the frame, whereas an excluded screen captures no frames at all. Seed the list at launch, or manage it at runtime:
+
+```swift
+// Seed at startup:
+Replay.start(with: ReplayConfig(
+    apiKey: "rpl_pk_YOUR_KEY",
+    apiHost: "https://us.replayfy.app",
+    excludedScreens: ["Paywall", "PinEntry"]
+))
+
+// …or manage at runtime:
+Replay.excludeScreen("Paywall")               // pause frames while "Paywall" is foreground
+Replay.unexcludeScreen("Paywall")             // resume
+Replay.setExcludedScreens(["PinEntry", "CardScanner"])
+```
 
 ### Logging
 
@@ -204,6 +228,15 @@ let session = URLSession(configuration: cfg)
 |---|---|
 | `Replay.optOutOverall(_:)` | Overall opt-out — drops all events and recording. Persists across launches. |
 | `Replay.isOptedOutOverall` | `Bool` — whether the user is currently opted out. |
+| `Replay.optOutOfSchematicRecordings(_:)` | Snapshot-only opt-out — pauses frame capture while every other event type keeps flowing. Persists across launches. |
+| `Replay.isOptedOutOfSchematicRecordings` | `Bool` — whether snapshot recording is currently opted out. |
+
+### Deep links
+
+| Method | Description |
+|---|---|
+| `Replay.urlForCurrentSession()` | `String?` — the dashboard URL for the current session (`<app-host>/recordings/<id>`, with the app host derived from `apiHost`), or `nil` when no session is active. |
+| `Replay.urlForCurrentUser()` | `String?` — the dashboard URL for the currently-identified user, or `nil` before `identify()` is called. |
 
 ### Integration verification
 
@@ -220,10 +253,6 @@ Entry points for host frameworks (React Native, Flutter) that capture interactio
 |---|---|
 | `Replay.reportInteraction(kind:label:x:y:)` | Feed a host-captured interaction (tap, gesture) into the timeline. |
 | `Replay.reportFrame(_:rects:styles:)` | Feed a host-captured frame with occlusion rects and styles. |
-
-<Warning>
-  A few methods are on the public surface but are no-ops in this release, pending an engine follow-up: `cancelSession()`, `optOutOfSchematicRecordings(_:)` / `isOptedOutOfSchematicRecordings`, `urlForCurrentSession()` / `urlForCurrentUser()`, `enableAdvancedGestureRecognizer(_:)`, `allowShortBreakForAnotherApp(_:windowSeconds:)`, and `setMultiSessionRecord(_:)`. Calling them is safe but has no effect.
-</Warning>
 
 ## Privacy & masking
 
