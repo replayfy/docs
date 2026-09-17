@@ -1,0 +1,74 @@
+---
+title: "Enable AI"
+description: "Turn on Storylines, signals, investigations, and the Ask assistant with your own model key. One env var reaches every provider."
+---
+
+The full agentic AI ships in the open-source build — you bring your own model
+key. On a self-host the key lives on the **server** (in the environment), shared
+by every workspace, and is **unmetered**: you pay your provider directly, nothing
+is metered by Replayfy.
+
+AI is optional and off until you give it a provider. Set three variables and
+restart the API.
+
+## Any provider, one key (recommended)
+
+Point `LLM_PROVIDER` at **OpenRouter** and you reach every provider by model id —
+no per-provider setup:
+
+```bash
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-...
+LLM_MODEL=anthropic/claude-sonnet-4.5
+```
+
+Swap `LLM_MODEL` for any model OpenRouter offers:
+
+| Provider | Example `LLM_MODEL` |
+| --- | --- |
+| Anthropic | `anthropic/claude-sonnet-4.5` |
+| OpenAI | `openai/gpt-4o` |
+| Google | `google/gemini-2.5-pro` |
+| xAI | `x-ai/grok-4` |
+| DeepSeek | `deepseek/deepseek-chat` |
+| Mistral | `mistralai/mistral-large` |
+| Groq (Llama) | `groq/llama-3.3-70b-versatile` |
+
+## Anthropic directly
+
+If you'd rather call Anthropic without a gateway:
+
+```bash
+LLM_PROVIDER=            # blank = Anthropic direct
+ANTHROPIC_API_KEY=sk-ant-...
+LLM_MODEL=claude-sonnet-4-5   # bare model id, no vendor prefix
+```
+
+## What it powers
+
+<CardGroup cols={2}>
+  <Card title="Storylines" icon="book-open">
+    A narrated summary of what happened across your product.
+  </Card>
+  <Card title="Signals & investigations" icon="magnifying-glass">
+    Surfaced issues, with a grounded root-cause pass on demand.
+  </Card>
+  <Card title="Ask" icon="message">
+    Ask about a metric, funnel, or session in plain language.
+  </Card>
+  <Card title="Likely cause" icon="lightbulb">
+    The Overview's "why did this move" explanations.
+  </Card>
+</CardGroup>
+
+## No key set?
+
+Nothing crashes. AI features tell you they need a key: the Ask panel shows a
+"set up AI" notice instead of a broken chat, and **Settings → AI** reports
+`Not configured` with the exact env vars to set. Add the key, restart, done.
+
+<Note>
+  The key is server-side by design — one key for every workspace, and it stays out
+  of the application database. There is no per-workspace key entry in the
+  self-hosted dashboard.
+</Note>

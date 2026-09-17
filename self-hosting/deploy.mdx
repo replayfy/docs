@@ -1,0 +1,81 @@
+---
+title: "Deploy to the cloud"
+description: "Run Replayfy on a managed platform instead of your own server — Render, Railway, and Brimble, with the honest caveats for each."
+---
+
+The tested path is `docker compose up` on any VPS. You can also deploy to a
+managed platform — but read this first, because Replayfy uses **five datastores**
+and no platform manages all of them.
+
+<Warning>
+  **Postgres and Redis** are the only datastores these platforms manage.
+  **MongoDB, ClickHouse, and object storage** you point at externally (e.g.
+  MongoDB Atlas, ClickHouse Cloud, Cloudflare R2). MongoDB must be a **replica
+  set** — a single node won't work. All of this runs **paid** instances; free
+  tiers won't hold the stack.
+</Warning>
+
+| Datastore | Render | Railway | Brimble |
+| --- | --- | --- | --- |
+| Postgres | ✅ managed | ✅ managed | ✅ managed |
+| Redis | ✅ managed | ✅ managed | ✅ managed |
+| MongoDB | ⚠️ external | ✅ managed | ✅ managed |
+| ClickHouse | ⚠️ external | ⚠️ external | ⚠️ external |
+| Object storage | ⚠️ external (R2/S3) | ⚠️ external (R2/S3) | ⚠️ external (R2/S3) |
+
+## Render
+
+The repo ships a [`render.yaml`](https://github.com/replayfy/replayfy/blob/main/render.yaml)
+blueprint that provisions the API + dashboard + managed Postgres + Redis. You
+supply the three external datastore URLs (Mongo, ClickHouse, S3) as environment
+variables after the blueprint loads.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/replayfy/replayfy)
+
+<Steps>
+  <Step title="Click the button">
+    Render reads `render.yaml` and previews the services + managed Postgres/Redis.
+  </Step>
+  <Step title="Fill the secrets">
+    Set the `sync: false` vars: `DATABASE_URL_MONGO` (Atlas), `CLICKHOUSE_URL`,
+    the `S3_*` block (R2/S3), and — after the first deploy assigns your
+    `*.onrender.com` URLs — `APP_BASE_URL`, `API_BASE_URL`, `CORS_ORIGINS`, then
+    redeploy.
+  </Step>
+</Steps>
+
+<Warning>
+  `render.yaml` is an **experimental starting point** — review it before you
+  deploy. It provisions paid services, and you own the external datastores.
+</Warning>
+
+## Railway
+
+Railway manages Postgres, Redis, **and** MongoDB (three of the four), so only
+ClickHouse and object storage are external. There's no repo blueprint file — you
+build a project once (the two app services + the managed databases), then
+**Generate Template from Project** and publish it; the "Deploy on Railway" button
+points at that published template. Railway does not run `docker-compose.yml`
+directly; map each compose service to a Railway service.
+
+## Brimble
+
+Brimble has **no one-click deploy button**. Deploy with its CLI and attach managed
+datastores from the dashboard:
+
+```bash
+npm i -g @brimble/cli
+brimble deploy --prod
+```
+
+Then provision managed Postgres / MongoDB / Redis from the Brimble dashboard, and
+point `CLICKHOUSE_URL` + the `S3_*` vars at external services. Brimble is a good
+fit for the static dashboard + a Node API; ClickHouse, object storage, and full
+orchestration are on you.
+
+## The reliable path
+
+If a clean one-click matters more than a managed control plane, put
+`docker compose up` on a single VPS — it runs all five datastores together, is
+the path we test, and needs no external services. See
+[Self-hosting](/self-hosting/overview).

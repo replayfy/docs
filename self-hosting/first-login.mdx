@@ -1,0 +1,62 @@
+---
+title: "First login"
+description: "How to sign in to a fresh self-hosted instance — with the seeded demo account, or by signing up on an empty one."
+---
+
+How you get your first account depends on `SEED_DEMO`.
+
+## With demo data (default)
+
+`SEED_DEMO=1` (the default) seeds a demo workspace, **Loop, Inc.**, with a
+ready-to-use owner account. Open **http://localhost:8080** and sign in:
+
+- **email** `admin@local`
+- **password** `admin`
+
+<Warning>
+  Change this password immediately on anything reachable from the internet, and
+  set `SEED_DEMO=0` for a real deployment so the demo account is never created.
+</Warning>
+
+## On an empty instance
+
+With `SEED_DEMO=0`, no account exists yet. Sign-up is **open** (not invite-only),
+and the account you create becomes the **owner** of the workspace it sets up.
+
+<Steps>
+  <Step title="Open the sign-up page">
+    Go to **http://localhost:8080/signup** and create an account.
+  </Step>
+  <Step title="Verify your email">
+    Sign-up sends a verification **link** — no login is issued until you click it.
+    On the default stack that email lands in the **Mailpit catcher** at
+    **http://localhost:8025**. Open it and click the link.
+  </Step>
+  <Step title="Create your workspace">
+    Onboarding walks you through naming your first workspace. You own it.
+  </Step>
+</Steps>
+
+<Note>
+  There is **no instance-wide super-admin**. Roles are per-workspace — every user
+  owns the workspaces they create.
+</Note>
+
+### No mail server? Skip verification
+
+If you run without a mail server (or before you've configured one), the
+verification link can never arrive and sign-up would dead-end. Set:
+
+```bash
+AUTH_AUTOVERIFY=1
+```
+
+New sign-ups are then marked verified on creation and you go straight to
+onboarding — no email needed.
+
+<Warning>
+  `AUTH_AUTOVERIFY=1` + a publicly reachable instance means **anyone** can create
+  verified accounts. Treat it as a bootstrap switch: enable it long enough to
+  create your first owner on a private/local box, then turn it off and rely on the
+  emailed link (configure `EMAIL_PROVIDER` for real delivery).
+</Warning>

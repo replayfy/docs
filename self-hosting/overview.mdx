@@ -1,0 +1,98 @@
+---
+title: "Self-hosting Replayfy"
+description: "Run the whole Replayfy platform on your own infrastructure — unlimited, unmetered, AGPL-3.0. Session replay, analytics, funnels, crashlytics, and the agentic AI, all with one command."
+---
+
+Replayfy is **open core**. The [`replayfy/replayfy`](https://github.com/replayfy/replayfy)
+repository is the full product, and when you self-host it is **unlimited and
+unmetered** — no project cap, no seat cap, no feature flags behind a paywall. The
+AI assistant is included; you bring your own model key. Only subscription billing
+and the fully-managed AI live in [Replayfy Cloud](https://replayfy.app).
+
+<Note>
+  Prefer not to run infrastructure? [Replayfy Cloud](https://replayfy.app) is the
+  same product, hosted and managed for you. Self-hosting is free and complete —
+  Cloud is a convenience, not a paywall.
+</Note>
+
+## What you run
+
+A single `docker compose up` brings up the API, the dashboard, and every
+datastore they need:
+
+| Component | Role |
+| --- | --- |
+| **API** (NestJS) | Ingestion, analytics, funnels, crashlytics, the AI agent, all reads |
+| **Dashboard** (React) | The web app, served by nginx |
+| **Postgres** | Workspaces, users, config, issues |
+| **MongoDB** | Web replay timelines (rrweb) — single-node replica set |
+| **ClickHouse** | The analytics / event store (everything that must scale) |
+| **Redis** | Queues and caches |
+| **Object storage** | Session assets + backups (MinIO locally; any S3-compatible store in prod) |
+| **Mailpit** | A local email catcher (swap for your SMTP relay in prod) |
+
+## Requirements
+
+- **Docker** (Docker Desktop, OrbStack, or Docker Engine + Compose v2).
+- ~4 GB RAM free for the full stack.
+- For a real deployment: a Linux host, a domain, and HTTPS in front.
+
+## Quick start
+
+```bash
+git clone https://github.com/replayfy/replayfy.git && cd replayfy
+cp .env.example .env          # change JWT_SECRET before exposing it
+docker compose up             # builds + starts the whole stack
+```
+
+Open **http://localhost:8080**. See [First login](/self-hosting/first-login) for
+how to sign in.
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="/self-hosting/configuration">
+    Every environment variable — URLs, datastores, storage, email.
+  </Card>
+  <Card title="First login" icon="key" href="/self-hosting/first-login">
+    The demo account, or signing up on an empty instance.
+  </Card>
+  <Card title="Enable AI" icon="sparkles" href="/self-hosting/ai">
+    Bring your own key — one env var reaches every provider.
+  </Card>
+  <Card title="Deploy to the cloud" icon="cloud" href="/self-hosting/deploy">
+    Render, Railway, Brimble — and the honest caveats.
+  </Card>
+</CardGroup>
+
+## Run pre-built images
+
+Every push to `main` publishes multi-arch images to the GitHub Container
+Registry, so you can skip the build:
+
+```bash
+docker pull ghcr.io/replayfy/server:latest
+docker pull ghcr.io/replayfy/dashboard:latest
+# run the published images instead of building from source:
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up
+```
+
+The dashboard image is **runtime-configurable** (`API_BASE_URL`), so one image
+works for any deployment — not just localhost.
+
+## Upgrading
+
+Pull the latest and re-run — migrations are idempotent and run on every boot:
+
+```bash
+git pull            # or: docker compose pull  (for the GHCR images)
+docker compose up -d --build
+```
+
+<Warning>
+  Back up your datastores before upgrading a production instance. The volumes to
+  snapshot are Postgres, MongoDB, ClickHouse, and your object-storage bucket.
+</Warning>
+
+## Licence
+
+The server and dashboard are **AGPL-3.0**; the capture SDKs are **MIT**. See
+[`LICENSE`](https://github.com/replayfy/replayfy/blob/main/LICENSE).

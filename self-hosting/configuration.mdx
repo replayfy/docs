@@ -1,0 +1,108 @@
+---
+title: "Configuration"
+description: "Every environment variable for a self-hosted Replayfy — with working local defaults, so you only change what you need."
+---
+
+Everything is env-driven. `cp .env.example .env` and edit. Each variable has a
+working local default in `docker-compose.yml`, so a bare `docker compose up`
+runs; you only set what a real deployment needs.
+
+## Security (required)
+
+<ParamField path="JWT_SECRET" type="string" required>
+  Session-token signing secret. The API refuses to start if it's unset or shorter
+  than 16 chars. Generate one:
+  `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+</ParamField>
+
+## Public URLs
+
+For a real deployment, point these at your domain (behind HTTPS).
+
+<ParamField path="APP_BASE_URL" type="string">
+  Public origin of the dashboard, e.g. `https://replayfy.example.com`.
+</ParamField>
+<ParamField path="API_BASE_URL" type="string">
+  Public origin of the API, e.g. `https://api.example.com`. The dashboard image
+  reads this at runtime, so one image works for any host.
+</ParamField>
+<ParamField path="CORS_ORIGINS" type="string">
+  Comma-separated allowlist of browser origins. Set it to your dashboard origin.
+</ParamField>
+
+## Datastores
+
+The compose defaults wire these to the bundled containers. Override only to point
+at external/managed datastores.
+
+<ParamField path="DATABASE_URL_POSTGRES" type="string" />
+<ParamField path="DATABASE_URL_MONGO" type="string">
+  Must be a **replica set** — Prisma requires one. The bundled Mongo self-initiates
+  `rs0`; a managed MongoDB (e.g. Atlas) already is one.
+</ParamField>
+<ParamField path="CLICKHOUSE_URL" type="string" />
+<ParamField path="REDIS_URL" type="string" />
+
+## Object storage (S3-compatible)
+
+Stores session assets, thumbnails, and media. Any S3-compatible store works —
+MinIO (the default), AWS S3, Cloudflare R2, Backblaze B2.
+
+<ParamField path="S3_ENDPOINT" type="string" />
+<ParamField path="S3_REGION" type="string" />
+<ParamField path="S3_FORCE_PATH_STYLE" type="boolean">
+  `true` for MinIO.
+</ParamField>
+<ParamField path="S3_ACCESS_KEY_ID" type="string" />
+<ParamField path="S3_SECRET_ACCESS_KEY" type="string" />
+<ParamField path="S3_BUCKET" type="string" />
+<ParamField path="S3_PUBLIC_BASE_URL" type="string">
+  The browser-reachable read URL. Path-style stores include the bucket, e.g.
+  `http://localhost:9002/replayfy`.
+</ParamField>
+
+<Tip>
+  Cloudflare R2 shortcut: set `R2_ACCOUNT_ID` + `R2_ACCESS_KEY_ID` +
+  `R2_SECRET_ACCESS_KEY` + `R2_BUCKET` and the endpoint is derived for you.
+</Tip>
+
+## Email
+
+Defaults to the built-in **Mailpit** catcher — read what the app sends at
+`http://localhost:8025`. For real delivery:
+
+<ParamField path="EMAIL_PROVIDER" type="string">
+  `smtp`, `resend`, or `console` (logs to stdout). Defaults to the Mailpit SMTP.
+</ParamField>
+<ParamField path="SMTP_HOST / SMTP_PORT / SMTP_SECURE" type="string">
+  Your relay, when `EMAIL_PROVIDER=smtp`.
+</ParamField>
+<ParamField path="EMAIL_FROM" type="string" />
+
+## AI (optional)
+
+See [Enable AI](/self-hosting/ai) for the full setup. In short:
+
+<ParamField path="LLM_PROVIDER" type="string">
+  `openrouter` (reaches every provider by model id) or blank for Anthropic direct.
+</ParamField>
+<ParamField path="OPENROUTER_API_KEY / ANTHROPIC_API_KEY" type="string" />
+<ParamField path="LLM_MODEL" type="string">
+  The model id, e.g. `anthropic/claude-sonnet-4.5` (OpenRouter) or
+  `claude-sonnet-4-5` (Anthropic direct).
+</ParamField>
+
+## First run
+
+<ParamField path="SEED_DEMO" type="boolean">
+  `1` (default) seeds a demo workspace + the `admin@local` / `admin` login. Set
+  `0` to start empty.
+</ParamField>
+<ParamField path="AUTH_AUTOVERIFY" type="boolean">
+  `true` lets `/signup` work without a mail server (new accounts are marked
+  verified on creation). See [First login](/self-hosting/first-login).
+  <Warning>
+    Keep this **off** on an internet-facing instance — it lets anyone create
+    verified accounts.
+  </Warning>
+</ParamField>

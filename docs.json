@@ -10,6 +10,7 @@
   "navigation": {
     "groups": [
       { "group": "Get started", "pages": ["introduction", "quickstart"] },
+      { "group": "Self-hosting", "pages": ["self-hosting/overview", "self-hosting/configuration", "self-hosting/first-login", "self-hosting/social-login", "self-hosting/ai", "self-hosting/deploy"] },
       { "group": "Install the SDK", "pages": ["platforms/web", "platforms/ios", "platforms/android", "platforms/react-native", "platforms/flutter"] },
       { "group": "Products", "pages": ["products/session-replay", "products/product-analytics", "products/analytics", "products/funnels", "products/cohorts", "products/crashlytics", "products/alerts"] },
       { "group": "Platform", "pages": ["platform/replayfy-ai", "platform/ai-credits", "platform/integrations", "platform/api-and-keys", "platform/administration", "platform/workspaces-and-billing"] },

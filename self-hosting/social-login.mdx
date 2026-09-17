@@ -1,0 +1,104 @@
+---
+title: "Social login"
+description: "Add Continue with Google, GitHub, or GitLab to your self-hosted Replayfy. Set a provider's client credentials and its button appears."
+---
+
+Replayfy supports social login with **Google, GitHub, and GitLab**. Each is
+optional and off until you provide its OAuth app credentials.
+
+<Note>
+  Buttons appear only for providers you've configured. A fresh self-host shows no
+  social buttons at all (not dead ones) — email + password just works.
+</Note>
+
+## How it works
+
+For each provider you register an OAuth app, then set two environment variables:
+`<PROVIDER>_CLIENT_ID` and `<PROVIDER>_CLIENT_SECRET`. Restart the API and the
+"Continue with …" button shows up on the login and sign-up screens.
+
+The **callback URL** you register with the provider is always:
+
+```
+<API_BASE_URL>/v1/auth/oauth/<provider>/callback
+```
+
+For example, if your API is at `https://api.example.com`:
+
+- Google → `https://api.example.com/v1/auth/oauth/google/callback`
+- GitHub → `https://api.example.com/v1/auth/oauth/github/callback`
+- GitLab → `https://api.example.com/v1/auth/oauth/gitlab/callback`
+
+<Warning>
+  `API_BASE_URL` must be set to your real API origin — the callback URL is built
+  from it. If it's wrong, the provider redirects to the wrong place after login.
+</Warning>
+
+## GitHub
+
+<Steps>
+  <Step title="Create an OAuth app">
+    GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**.
+    Set the **Authorization callback URL** to
+    `<API_BASE_URL>/v1/auth/oauth/github/callback`.
+  </Step>
+  <Step title="Set the env vars">
+    ```bash
+    GITHUB_CLIENT_ID=Iv1.xxxxxxxx
+    GITHUB_CLIENT_SECRET=xxxxxxxx
+    ```
+    Restart the API. "Continue with GitHub" now appears.
+  </Step>
+</Steps>
+
+## Google
+
+<Steps>
+  <Step title="Create OAuth credentials">
+    Google Cloud Console → **APIs & Services → Credentials → Create credentials →
+    OAuth client ID → Web application**. Add
+    `<API_BASE_URL>/v1/auth/oauth/google/callback` under **Authorized redirect
+    URIs**.
+  </Step>
+  <Step title="Set the env vars">
+    ```bash
+    GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
+    GOOGLE_CLIENT_SECRET=xxxxxxxx
+    ```
+  </Step>
+</Steps>
+
+## GitLab
+
+<Steps>
+  <Step title="Create an application">
+    GitLab → **Preferences → Applications** (or a group/instance application).
+    Redirect URI: `<API_BASE_URL>/v1/auth/oauth/gitlab/callback`. Scope: `read_user`.
+  </Step>
+  <Step title="Set the env vars">
+    ```bash
+    GITLAB_CLIENT_ID=xxxxxxxx
+    GITLAB_CLIENT_SECRET=xxxxxxxx
+    ```
+  </Step>
+</Steps>
+
+## In Docker
+
+Add the variables to your `.env` — the compose file already passes them through to
+the API:
+
+```bash
+# .env
+GITHUB_CLIENT_ID=Iv1.xxxxxxxx
+GITHUB_CLIENT_SECRET=xxxxxxxx
+```
+
+```bash
+docker compose up -d   # picks up the new env
+```
+
+<Tip>
+  Only set the providers you want. There's no need to configure all three — each
+  is independent, and unconfigured ones simply don't show.
+</Tip>
