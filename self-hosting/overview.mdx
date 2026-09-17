@@ -39,14 +39,26 @@ datastore they need:
 
 ## Quick start
 
+**No clone, no build** — grab two files and go. `docker compose up` pulls the
+pre-built images from GHCR:
+
 ```bash
-git clone https://github.com/replayfy/replayfy.git && cd replayfy
-cp .env.example .env          # change JWT_SECRET before exposing it
-docker compose up             # builds + starts the whole stack
+mkdir replayfy && cd replayfy
+curl -O https://raw.githubusercontent.com/replayfy/replayfy/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/replayfy/replayfy/main/.env.example
+# change JWT_SECRET in .env before exposing it
+docker compose up
 ```
 
 Open **http://localhost:8080**. See [First login](/self-hosting/first-login) for
 how to sign in.
+
+<Tip>
+  Pin a version with `REPLAYFY_IMAGE_TAG` in `.env` (defaults to `latest`) — see
+  [Versions](#versions). Working on the code instead? Clone the repo and build
+  from source: `docker compose -f docker-compose.yml -f docker-compose.build.yml
+  up --build`.
+</Tip>
 
 <CardGroup cols={2}>
   <Card title="Configuration" icon="sliders" href="/self-hosting/configuration">
@@ -63,28 +75,32 @@ how to sign in.
   </Card>
 </CardGroup>
 
-## Run pre-built images
+## Versions
 
-Every push to `main` publishes multi-arch images to the GitHub Container
-Registry, so you can skip the build:
+`docker compose up` pulls **multi-arch** (amd64 + arm64) images from GHCR. Pin a
+version with `REPLAYFY_IMAGE_TAG` in `.env` — it defaults to `latest`:
 
 ```bash
-docker pull ghcr.io/replayfy/server:latest
-docker pull ghcr.io/replayfy/dashboard:latest
-# run the published images instead of building from source:
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up
+REPLAYFY_IMAGE_TAG=0.1.0
 ```
 
-The dashboard image is **runtime-configurable** (`API_BASE_URL`), so one image
-works for any deployment — not just localhost.
+Tags follow [semver](https://semver.org): `0.1.0`, `0.1`, and `latest` all resolve
+to published images. To know exactly which build you're on — handy for a bug
+report — check the footer under any **Settings** tab, or query the API:
+
+```bash
+curl https://your-host/version
+# {"version":"0.1.0","commit":"…","builtAt":"…"}
+```
 
 ## Upgrading
 
-Pull the latest and re-run — migrations are idempotent and run on every boot:
+Pull the newer images and re-run — migrations are idempotent and run on every
+boot:
 
 ```bash
-git pull            # or: docker compose pull  (for the GHCR images)
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 ```
 
 <Warning>
