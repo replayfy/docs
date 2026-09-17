@@ -46,14 +46,14 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
 
         initReplay({
           apiKey: "rpl_pk_YOUR_KEY",
-          apiHost: "https://us.replayfy.app",
+          apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
         });
         ```
         ```html Script tag
         <script>
           Replayfy.init({
             apiKey: "rpl_pk_YOUR_KEY",
-            apiHost: "https://us.replayfy.app",
+            apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
           });
         </script>
         ```
@@ -84,7 +84,7 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
 
         Replay.start(with: ReplayConfig(
             apiKey: "rpl_pk_YOUR_KEY",
-            apiHost: "https://us.replayfy.app"
+            apiHost: "https://us.replayfy.app"  // or your self-hosted API URL
         ))
         ```
       </Step>
@@ -113,7 +113,7 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
             this,
             ReplayConfig(
                 apiKey = "rpl_pk_YOUR_KEY",
-                apiHost = "https://us.replayfy.app",
+                apiHost = "https://us.replayfy.app",  // or your self-hosted API URL
             ),
         )
         ```
@@ -139,7 +139,7 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
 
         Replay.start({
           apiKey: 'rpl_pk_YOUR_KEY',
-          apiHost: 'https://us.replayfy.app',
+          apiHost: 'https://us.replayfy.app',  // or your self-hosted API URL
         });
         ```
       </Step>
@@ -163,7 +163,7 @@ Recording takes three steps on every platform: **install**, **initialize**, **ve
 
         await Replay.start(const ReplayConfig(
           apiKey: 'rpl_pk_YOUR_KEY',
-          apiHost: 'https://us.replayfy.app',
+          apiHost: 'https://us.replayfy.app',  // or your self-hosted API URL
         ));
         ```
       </Step>

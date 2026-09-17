@@ -49,7 +49,7 @@ import { initReplay } from "@replayfyapp/browser";
 
 const replay = initReplay({
   apiKey: "rpl_pk_YOUR_KEY",
-  apiHost: "https://us.replayfy.app",
+  apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
 });
 ```
 
@@ -59,7 +59,7 @@ const replay = initReplay({
 <script>
   Replayfy.init({
     apiKey: "rpl_pk_YOUR_KEY",
-    apiHost: "https://us.replayfy.app",
+    apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
   });
 </script>
 ```
@@ -123,7 +123,7 @@ Pass these options to `initReplay(config)` (npm) or `Replayfy.init(config)` (CDN
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `apiKey` | `string` | — | **Required.** Your project's publishable API key. |
-| `apiHost` | `string` | — | **Required.** Replayfy ingest host, e.g. `https://us.replayfy.app`. |
+| `apiHost` | `string` | — | **Required.** Replayfy ingest host, e.g. `https://us.replayfy.app` (or your self-hosted API URL). |
 | `projectId` | `string` | — | Optional project identifier, useful when one key spans environments. |
 | `distinctId` | `string` | — | Identify the user at startup (equivalent to calling `identify` immediately). |
 | `revId` | `string` | — | Build / release id of the deployed app, to scope replays and funnels to one release. |
@@ -233,7 +233,7 @@ Replayfy is designed to keep sensitive data in the browser — **every `<input>`
 ```ts npm
 initReplay({
   apiKey: "rpl_pk_YOUR_KEY",
-  apiHost: "https://us.replayfy.app",
+  apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
   maskAllInputs: true,
   maskTextSelector: ".rpf-mask",
   blockSelector: ".rpf-block",
@@ -244,7 +244,7 @@ initReplay({
 ```js Script tag
 Replayfy.init({
   apiKey: "rpl_pk_YOUR_KEY",
-  apiHost: "https://us.replayfy.app",
+  apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
   maskAllInputs: true,
   maskTextSelector: ".rpf-mask",
   blockSelector: ".rpf-block",

@@ -73,7 +73,7 @@ dependencies {
                 this,
                 ReplayConfig(
                     apiKey = "rpl_pk_YOUR_KEY",
-                    apiHost = "https://us.replayfy.app",
+                    apiHost = "https://us.replayfy.app",  // or your self-hosted API URL
                 ),
             )
         }
@@ -108,7 +108,7 @@ Only `apiKey` and `apiHost` are required; every other option has a sensible defa
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `apiKey` | `String` | **required** | Project API key from your dashboard. |
-| `apiHost` | `String` | **required** | Ingest base URL — `https://us.replayfy.app`. |
+| `apiHost` | `String` | **required** | Ingest base URL — `https://us.replayfy.app` (or your self-hosted API URL). |
 | `projectId` | `String?` | `null` | Only needed when one key spans multiple projects. |
 | `distinctId` | `String?` | `null` | Known user id at init time; otherwise an install-stable anonymous id is generated. |
 | `flushIntervalMs` | `Long` | `5000` | How often the buffered batch is uploaded (ms). |
@@ -170,7 +170,7 @@ Replay.init(
     this,
     ReplayConfig(
         apiKey = "rpl_pk_YOUR_KEY",
-        apiHost = "https://us.replayfy.app",
+        apiHost = "https://us.replayfy.app",  // or your self-hosted API URL
         excludedScreens = listOf("Paywall", "PinEntry"),
     ),
 )

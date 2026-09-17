@@ -43,7 +43,7 @@ import Replay from '@replayfyapp/react-native';
 
 Replay.start({
   apiKey: 'rpl_pk_YOUR_KEY',
-  apiHost: 'https://us.replayfy.app',
+  apiHost: 'https://us.replayfy.app',  // or your self-hosted API URL
 });
 ```
 </Step>
@@ -59,7 +59,7 @@ export default function App() {
     <ReplayProvider
       config={{
         apiKey: 'rpl_pk_YOUR_KEY',
-        apiHost: 'https://us.replayfy.app',
+        apiHost: 'https://us.replayfy.app',  // or your self-hosted API URL
       }}
     >
       <RootNavigator />
@@ -96,7 +96,7 @@ Pass these to `Replay.start(config)`:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `apiKey` | `string` | **required** | Your project API key from the dashboard. |
-| `apiHost` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
+| `apiHost` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app` (or your self-hosted API URL). |
 | `distinctId` | `string` | — | Known user id at start (otherwise an install-stable anonymous id is used). |
 | `recordScreen` | `boolean` | `true` | Capture screen frames. |
 | `recordNetwork` | `boolean` | `true` | Capture `fetch` + `XHR` traffic. |

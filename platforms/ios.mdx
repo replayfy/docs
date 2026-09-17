@@ -50,7 +50,7 @@ pod 'Replayfy', '~> 0.0.4'
                      [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Replay.start(with: ReplayConfig(
             apiKey: "rpl_pk_YOUR_KEY",
-            apiHost: "https://us.replayfy.app"
+            apiHost: "https://us.replayfy.app"  // or your self-hosted API URL
         ))
         return true
     }
@@ -66,7 +66,7 @@ pod 'Replayfy', '~> 0.0.4'
         init() {
             Replay.start(with: ReplayConfig(
                 apiKey: "rpl_pk_YOUR_KEY",
-                apiHost: "https://us.replayfy.app"
+                apiHost: "https://us.replayfy.app"  // or your self-hosted API URL
             ))
         }
         var body: some Scene { WindowGroup { ContentView() } }
@@ -103,7 +103,7 @@ Only `apiKey` and `apiHost` are required. Pass any subset to `ReplayConfig(...)`
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `apiKey` | `String` | **required** | Your project API key from the dashboard. |
-| `apiHost` | `String` | **required** | Ingest base URL, e.g. `https://us.replayfy.app`. |
+| `apiHost` | `String` | **required** | Ingest base URL, e.g. `https://us.replayfy.app` (or your self-hosted API URL). |
 | `projectId` | `String?` | `nil` | Only when one key covers multiple projects. |
 | `distinctId` | `String?` | `nil` | Known user id at start; otherwise an install-stable anonymous id is used. |
 | `flushInterval` | `TimeInterval` | `5` | Seconds between automatic uploads of the in-memory batch. |
@@ -178,7 +178,7 @@ Exclusion is **distinct from `occludeSensitiveScreen(_:)`** — that keeps recor
 // Seed at startup:
 Replay.start(with: ReplayConfig(
     apiKey: "rpl_pk_YOUR_KEY",
-    apiHost: "https://us.replayfy.app",
+    apiHost: "https://us.replayfy.app",  // or your self-hosted API URL
     excludedScreens: ["Paywall", "PinEntry"]
 ))
 
