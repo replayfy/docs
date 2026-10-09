@@ -229,8 +229,40 @@ Release builds ship obfuscated or stripped stacks — R8-renamed class names on 
 ### Android
 
 <Steps>
-  <Step title="Upload your mapping for each build">
-    Upload the R8/ProGuard `mapping.txt` (JVM) and, for native code, the unstripped `lib<name>.<abi>.so` debug binaries. The easiest path is the Gradle plugin `com.replayfy.symbols`, which uploads them from your build pipeline automatically. You can also POST them from a CI step to `/v1/replay/symbols/{platform}/{version}/{build}/{filename}`, with a **server key** (`rpl_sk_…`) in the `x-replay-api-key` header. Uploads made with the publishable key (`rpl_pk_…`) are rejected with a 403, because that key ships inside your app. Create a server key in **Settings → Install → Generate key** and keep it in your CI secrets. See [API keys](/platform/api-and-keys).
+  <Step title="Create a server key">
+    Symbol uploads need a **server key** (`rpl_sk_…`), not the publishable key (`rpl_pk_…`) your app ships with. Uploads made with the publishable key are rejected with a 403. Create one in **Settings → Install → Generate key → Server** and store it in your CI secrets, for example as `REPLAYFY_SERVER_KEY`. See [API keys](/platform/api-and-keys).
+  </Step>
+  <Step title="Add the Gradle plugin">
+    The `app.replayfy.symbols` plugin uploads the R8/ProGuard `mapping.txt` and, for native code, the unstripped `lib<name>.<abi>.so` debug binaries after every `assembleRelease`. It's published on Maven Central, so make sure `mavenCentral()` is in your plugin repositories:
+
+    ```kotlin settings.gradle.kts
+    pluginManagement {
+        repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+    ```
+
+    Then apply it to your **app** module, next to the Android plugin:
+
+    ```kotlin app/build.gradle.kts
+    plugins {
+        id("com.android.application")
+        id("app.replayfy.symbols") version "0.1.0"
+    }
+
+    replaySymbols {
+        apiKey = providers.environmentVariable("REPLAYFY_SERVER_KEY").getOrElse("")
+        // apiHost = "https://replay.example.com"  // only if you self-host; defaults to Replayfy Cloud
+        // uploadOnAssemble = false                 // to upload only via ./gradlew uploadReplaySymbolsRelease
+    }
+    ```
+
+    A release build then runs `uploadReplaySymbolsRelease` automatically. If the key is missing or wrong, that task fails with the reason, so a misconfigured CI build is easy to spot.
+
+    Prefer a plain CI step? POST each file to `/v1/replay/symbols/{platform}/{version}/{build}/{filename}` with the server key in the `x-replay-api-key` header and a JSON body `{ "dataUrl": "data:<content-type>;base64,<file>" }`.
   </Step>
   <Step title="Match the version and build">
     Symbols are stored per **version + build**, so those must match what the SDK reported with the crash. The SDK auto-detects your app version and build; override them with `setAppVersion(version, build)` if you ship white-label or wrapper builds.
