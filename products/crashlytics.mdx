@@ -230,7 +230,7 @@ Release builds ship obfuscated or stripped stacks — R8-renamed class names on 
 
 <Steps>
   <Step title="Upload your mapping for each build">
-    Upload the R8/ProGuard `mapping.txt` (JVM) and, for native code, the unstripped `lib<name>.<abi>.so` debug binaries. The easiest path is the Gradle plugin `com.replayfy.symbols`, which uploads them from your build pipeline automatically. You can also POST them from a CI step to `/v1/replay/symbols/{platform}/{version}/{build}/{filename}`, authenticated with your project's ingest key (`x-replay-api-key`).
+    Upload the R8/ProGuard `mapping.txt` (JVM) and, for native code, the unstripped `lib<name>.<abi>.so` debug binaries. The easiest path is the Gradle plugin `com.replayfy.symbols`, which uploads them from your build pipeline automatically. You can also POST them from a CI step to `/v1/replay/symbols/{platform}/{version}/{build}/{filename}`, with a **server key** (`rpl_sk_…`) in the `x-replay-api-key` header. Uploads made with the publishable key (`rpl_pk_…`) are rejected with a 403, because that key ships inside your app. Create a server key in **Settings → Install → Generate key** and keep it in your CI secrets. See [API keys](/platform/api-and-keys).
   </Step>
   <Step title="Match the version and build">
     Symbols are stored per **version + build**, so those must match what the SDK reported with the crash. The SDK auto-detects your app version and build; override them with `setAppVersion(version, build)` if you ship white-label or wrapper builds.
